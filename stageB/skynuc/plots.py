@@ -171,3 +171,48 @@ def fig_ladder(tau_c="10"):
     ax[1].set_title("Collapse rate of established skyrmions", fontsize=9)
     fig.tight_layout(); fig.savefig(f"{FIG}/ladder.png"); plt.close(fig)
     return dict(dE_b=-p[0], dE_col=-pn[0], T=T.tolist(), Gamma0=G.tolist(), nu=nu.tolist(), N=N.tolist())
+
+
+def fig_b2(tau_c="10"):
+    """Stage B' summary: rotation-only drive, D, alpha and L dependence, omega/psi separation."""
+    import sys as _s
+    _s.path.insert(0, ".")
+    from skynuc.analysis import analyse_objects
+    rows = {r["run"]: r for r in _table() if r["tau_c"] == tau_c}
+    comb = json.load(open("results/combined.json"))[f"tau{tau_c}"]
+    p5 = comb["beta=alpha=0.1 (P5,P5b,P5_u2x)"]["s_nuc"]
+    g = lambda n: (float(rows[n]["nuc_s_glm"]), float(rows[n]["nuc_ds_jk"]))
+    fig, ax = plt.subplots(1, 4, figsize=(15, 3.6))
+    # (a) rotation term only
+    lab = ["P5 group\n(shear, β=α)", "P10\n(−Ωẑ×S only)", "P10b\n(+Ωẑ×S)"]
+    vals = [(p5[0], p5[1]), g("P10"), g("P10b")]
+    for i, (v, e) in enumerate(vals):
+        ax[0].errorbar(i, v, yerr=e, fmt="o", ms=8, color=[C[0], C[1], C[1]][i], elinewidth=1.4)
+    ax[0].axhline(0, color=INK2, lw=0.8); ax[0].axhline(p5[0], color=C[0], lw=0.8, ls=":")
+    ax[0].axhline(-p5[0], color=C[0], lw=0.8, ls=":")
+    ax[0].set_xticks(range(3), lab, fontsize=8); ax[0].set_ylabel(f"s_nuc (τ_c={tau_c})")
+    ax[0].set_title("Rotation mechanism (β = α = 0.1)", fontsize=9)
+    # (b) D dependence at beta = alpha
+    D = [0.2, 0.3, 0.4]; v = [g("P11_D0.2"), p5, g("P11_D0.4")]
+    ax[1].errorbar(D, [x[0] for x in v], yerr=[x[1] for x in v], fmt="o-", ms=8, color=C[0], elinewidth=1.4)
+    ax[1].axhline(0, color=INK2, lw=0.8); ax[1].set_xlabel("D  (B/D² = 4/3)"); ax[1].set_ylabel("s_rot")
+    ax[1].set_title("P11: D dependence of s_rot", fontsize=9)
+    # (c) alpha dependence at beta = alpha
+    a3 = comb.get("alpha=0.3, beta=0.3 (diag_P5_a0.3)", {}).get("s_nuc", [np.nan, np.nan])
+    A = [0.05, 0.1, 0.2, 0.3]; v = [g("P12_a0.05"), p5, g("P12_a0.2"), a3]
+    ax[2].errorbar(A, [x[0] for x in v], yerr=[x[1] for x in v], fmt="o-", ms=8, color=C[2], elinewidth=1.4)
+    ax[2].axhline(0, color=INK2, lw=0.8); ax[2].set_xlabel("α = β"); ax[2].set_ylabel("s_rot")
+    ax[2].set_title("P12: α dependence of s_rot", fontsize=9)
+    # (d) L dependence at fixed omega, beta = 0
+    b0 = comb["beta=0, alpha=0.1 (P1,P1b,P2,P2b,P3,P1_dt0.01,P1_u2x)"]["s_nuc"]
+    l128 = [g("dep_L128_P1"), g("P13_L128")]
+    w = np.array([1 / e ** 2 for _, e in l128]); m128 = (sum(v * ww for (v, _), ww in zip(l128, w)) / w.sum(), 1 / np.sqrt(w.sum()))
+    Ls = [32, 64, 128]; v = [g("P13_L32"), b0, m128]
+    ax[3].errorbar(Ls, [x[0] for x in v], yerr=[x[1] for x in v], fmt="o-", ms=8, color=C[6], elinewidth=1.4,
+                   label="β = 0, same ω (u₀ ∝ L)")
+    ax[3].errorbar([128.0 * 1.05] * 2, [x[0] for x in l128], yerr=[x[1] for x in l128], fmt="x", color=INK2, ms=6,
+                   elinewidth=0.8, label="L=128 single runs")
+    ax[3].set_xscale("log", base=2); ax[3].set_xticks(Ls, [str(x) for x in Ls])
+    ax[3].axhline(0, color=INK2, lw=0.8); ax[3].set_xlabel("L"); ax[3].set_ylabel("s_nuc")
+    ax[3].set_title("P13: L dependence at fixed ω", fontsize=9); ax[3].legend(fontsize=7)
+    fig.tight_layout(); fig.savefig(f"{FIG}/b2_summary.png"); plt.close(fig)

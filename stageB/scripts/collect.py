@@ -9,7 +9,7 @@ from skynuc.analysis import analyse_objects
 os.chdir(ROOT)
 os.makedirs("results/analysis", exist_ok=True)
 rows = []
-dirs = sorted(glob.glob("results/main/*")) + sorted(glob.glob("results/ladder/*")) + sorted(glob.glob("results/dep/*"))
+dirs = sorted(glob.glob("results/main/*")) + sorted(glob.glob("results/ladder/*")) + sorted(glob.glob("results/dep/*")) + sorted(glob.glob("results/b2/*"))
 for d in dirs:
     if not os.path.exists(os.path.join(d, "summary.json")):
         continue
