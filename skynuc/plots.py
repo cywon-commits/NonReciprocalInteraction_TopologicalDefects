@@ -91,7 +91,7 @@ def fig_points(dirs, tau_c=10.0, out="points.png", ncol=3):
         ax.axhline(0, color=INK2, lw=0.6)
         ttl = f"{o['run_id']}  (β−α)/α={o['ueff_factor']:+.0f}, u₀={o['u0']:+.3g}"
         ax.set_title(ttl, fontsize=8)
-        ax.set_xlabel("ω(y)" if o["drive"] == "shear" else "reference ω profile (u₀=1)")
+        ax.set_xlabel("ω(y)" if o["drive"] == "shear" else "reference ω(y) of the u₀=0.04 shear")
         ax.set_ylabel("log rate − mean")
         ax.legend(fontsize=7, loc="upper left")
     for ax in axs.ravel()[n:]:

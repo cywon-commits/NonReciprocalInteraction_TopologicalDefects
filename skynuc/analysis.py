@@ -352,8 +352,9 @@ def analyse_objects(run_dir, tau_c=5.0):
         om = np.array(s["omega_band"]); om_kind = "shear"
     else:
         edges = np.arange(nb + 1) * bw
-        om = -(1.0 / bw) * (np.sin(2 * np.pi * edges[1:] / L) - np.sin(2 * np.pi * edges[:-1] / L)) * 2 * np.pi / L
-        om_kind = "reference profile of a u0=1 shear (no drive applied)"
+        u_ref = 0.04  # same profile as the main shear points P1 (u0 = 0.04), so slopes are comparable
+        om = -(u_ref / bw) * (np.sin(2 * np.pi * edges[1:] / L) - np.sin(2 * np.pi * edges[:-1] / L))
+        om_kind = "reference: omega(y) of the u0=0.04 shear (no shear applied)"
     out = dict(run_id=c["run_id"], tau_c=tau_c, omega_kind=om_kind, T=c["T"], alpha=c["alpha"], beta=c["beta"],
                drive=c["drive"], u0=c["u0"], L=L, R=c["R"], t_run=c["t_run"], dts=c["dts"], dt=c["dt"],
                D=c["D"], B=c["B"], ueff_factor=(c["beta"] - c["alpha"]) / c["alpha"],
