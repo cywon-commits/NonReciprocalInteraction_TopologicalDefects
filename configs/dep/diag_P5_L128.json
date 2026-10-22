@@ -1,0 +1,16 @@
+{
+ "out_dir": "results/dep",
+ "L": 128,
+ "R": 16,
+ "T": 0.5,
+ "t_eq": 200.0,
+ "t_run": 2500.0,
+ "dts": 0.06,
+ "dt": 0.02,
+ "run_id": "diag_P5_L128",
+ "seed": 5012,
+ "alpha": 0.1,
+ "beta": 0.1,
+ "drive": "shear",
+ "u0": 0.08
+}

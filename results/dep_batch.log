@@ -1,0 +1,4 @@
+start configs/dep/dep_T0.45_P1.json
+start configs/dep/dep_T0.55_P1.json
+start configs/dep/dep_T0.55_P4.json
+start configs/dep/dep_L128_P1.json

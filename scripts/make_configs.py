@@ -50,3 +50,9 @@ for i, (name, p) in enumerate(dep.items()):
     cfg = dict(base, out_dir="results/dep", run_id=name, seed=4000 + i)
     cfg.update(p)
     json.dump(cfg, open(os.path.join(ROOT, f"configs/dep/{name}.json"), "w"), indent=1)
+# diagnosis of the non-zero beta = alpha control (P5)
+for name, p in {"diag_P5_a0.3": dict(alpha=0.3, beta=0.3, drive="shear", u0=U0),
+                "diag_P5_L128": dict(alpha=0.1, beta=0.1, drive="shear", u0=2 * U0, L=128, t_run=2500.0)}.items():
+    cfg = dict(base, out_dir="results/dep", run_id=name, seed=5000 + len(name))
+    cfg.update(p)
+    json.dump(cfg, open(os.path.join(ROOT, f"configs/dep/{name}.json"), "w"), indent=1)
