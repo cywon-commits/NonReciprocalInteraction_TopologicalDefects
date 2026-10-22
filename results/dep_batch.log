@@ -2,3 +2,6 @@ start configs/dep/dep_T0.45_P1.json
 start configs/dep/dep_T0.55_P1.json
 start configs/dep/dep_T0.55_P4.json
 start configs/dep/dep_L128_P1.json
+done configs/dep/dep_T0.55_P4.json rc 0 2792s
+done configs/dep/dep_T0.55_P1.json rc 0 2794s
+done configs/dep/dep_L128_P1.json rc 0 3360s
