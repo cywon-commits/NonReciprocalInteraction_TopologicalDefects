@@ -44,6 +44,25 @@ def glm_fit(N, expo, om, iters=50):
     return dict(s=float(b[1]), ds=float(np.sqrt(cov[1, 1])), a=float(b[0]), deviance_dof=float(dev / max(len(N) - 2, 1)))
 
 
+def glm2_fit(N, expo, om, ps, iters=60):
+    """Poisson GLM  N_b ~ Poisson(expo_b exp(a + a_omega om_b + a_psi ps_b))."""
+    N = np.asarray(N, float); expo = np.asarray(expo, float)
+    m = expo > 0
+    N, expo, om, ps = N[m], expo[m], np.asarray(om)[m], np.asarray(ps)[m]
+    X = np.vstack([np.ones(len(N)), om, ps]).T
+    b = np.array([np.log(N.sum() / expo.sum()), 0.0, 0.0])
+    for _ in range(iters):
+        mu = expo * np.exp(X @ b)
+        step = np.linalg.solve(X.T @ (mu[:, None] * X), X.T @ (N - mu))
+        b += step
+        if np.abs(step).max() < 1e-12:
+            break
+    mu = expo * np.exp(X @ b)
+    cov = np.linalg.inv(X.T @ (mu[:, None] * X))
+    return dict(a_omega=float(b[1]), da_omega=float(np.sqrt(cov[1, 1])), a_psi=float(b[2]),
+                da_psi=float(np.sqrt(cov[2, 2])), corr_param=float(cov[1, 2] / np.sqrt(cov[1, 1] * cov[2, 2])))
+
+
 def halves(N, expo, om):
     N = np.asarray(N, float); expo = np.asarray(expo, float); om = np.asarray(om, float)
     p, n = om > 0, om < 0
@@ -355,8 +374,8 @@ def analyse_objects(run_dir, tau_c=5.0):
     dirs = run_dir if isinstance(run_dir, (list, tuple)) else [run_dir]
     s, cnt, E, lifes = object_counts_multi(dirs, tau_c)
     c = s["config"]; nb = c["nbands"]; L = c["L"]; bw = L // nb
-    if c["drive"] == "shear":
-        om = np.array(s["omega_band"]); om_kind = "shear"
+    if c["drive"] in ("shear", "shear3", "rot"):
+        om = np.array(s["omega_band"]); om_kind = c["drive"]
     else:
         edges = np.arange(nb + 1) * bw
         u_ref = 0.04  # same profile as the main shear points P1 (u0 = 0.04), so slopes are comparable
@@ -384,6 +403,23 @@ def analyse_objects(run_dir, tau_c=5.0):
                          s_glm=g["s"], ds_glm=g["ds"], ds_jk=s_jk, lnR=h["lnR"], dlnR=h["dlnR"], dlnR_jk=r_jk,
                          Np=h["Np"], Nn=h["Nn"], lnrate_band=[None if not np.isfinite(x) else float(x) for x in lr],
                          N_band=Nb.tolist(), E_band=Eb.tolist())
+    if c["drive"] == "shear3" and "psi_band" in s:
+        ps = np.array(s["psi_band"])
+        for kind, Ex in (("nuc", E["nuc"]), ("col", E["col"])):
+            N = cnt[kind]
+            full = glm2_fit(N.sum((0, 1)), Ex.sum((0, 1)), om, ps)
+            R_, K_, _ = N.shape
+            vals = []
+            for r in range(R_):
+                for k in range(K_):
+                    f = glm2_fit(N.sum((0, 1)) - N[r, k], Ex.sum((0, 1)) - Ex[r, k], om, ps)
+                    vals.append([f["a_omega"], f["a_psi"]])
+            vals = np.array(vals); n = len(vals)
+            jk = np.sqrt((n - 1) / n * ((vals - vals.mean(0)) ** 2).sum(0))
+            full.update(da_omega_jk=float(jk[0]), da_psi_jk=float(jk[1]),
+                        corr_omega_psi_bands=float(np.corrcoef(om, ps)[0, 1]))
+            out[kind]["glm2"] = full
+        out["psi_band"] = ps.tolist()
     # transport: drift velocity and density profile of tracked favoured skyrmions
     ddt = np.array(s["drift_dt"])
     with np.errstate(invalid="ignore", divide="ignore"):

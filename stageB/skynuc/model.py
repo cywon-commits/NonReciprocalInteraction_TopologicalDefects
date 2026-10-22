@@ -23,8 +23,11 @@ def _cross(a0, a1, a2, b0, b1, b2):
 
 
 @njit(inline="always")
-def _rhs_site(S, r, y, x, Ly, Lx, J, Dx, Dy, B, K, alpha, beta, ux, uy, h0, h1, h2):
-    """Right-hand side of the LL-form equation at one site (S at that site read from S)."""
+def _rhs_site(S, r, y, x, Ly, Lx, J, Dx, Dy, B, K, alpha, beta, ux, uy, omz, h0, h1, h2):
+    """Right-hand side of the LL-form equation at one site (S at that site read from S).
+
+    omz[y, x] = Omega adds the pure spin precession -Omega z x S (stage B' point P10: Gilbert
+    D_t = d_t + Omega z x, which in LL form is exactly -Omega z x S with no damping partner)."""
     xp = x + 1
     if xp == Lx:
         xp = 0
@@ -80,7 +83,9 @@ def _rhs_site(S, r, y, x, Ly, Lx, J, Dx, Dy, B, K, alpha, beta, ux, uy, h0, h1, 
         o1 += t1 + alpha * v1
         o2 += t2 + alpha * v2
     inv = 1.0 / (1.0 + alpha * alpha)
-    return o0 * inv, o1 * inv, o2 * inv
+    om = omz[y, x]
+    # -Omega z x S = (Omega S_y, -Omega S_x, 0)
+    return o0 * inv + om * s1, o1 * inv - om * s0, o2 * inv
 
 
 @njit(inline="always")
@@ -167,7 +172,7 @@ def gauss_samples(state, n, kn, wn, fn):
 
 
 @njit(parallel=True, fastmath=True, cache=True)
-def heun_steps(S, Sp, K1, noise, nsteps, dt, J, Dx, Dy, B, K, alpha, beta, ux, uy, T, rng, kn, wn, fn):
+def heun_steps(S, Sp, K1, noise, nsteps, dt, J, Dx, Dy, B, K, alpha, beta, ux, uy, omz, T, rng, kn, wn, fn):
     """Advance S in place by nsteps Stratonovich-Heun steps.
 
     Sp, K1, noise are work arrays; rng is a uint64 state array of length R*Ly (one stream per row).
@@ -190,7 +195,7 @@ def heun_steps(S, Sp, K1, noise, nsteps, dt, J, Dx, Dy, B, K, alpha, beta, ux, u
                 noise[r, y, x, 0] = h0
                 noise[r, y, x, 1] = h1
                 noise[r, y, x, 2] = h2
-                k0, k1, k2 = _rhs_site(S, r, y, x, Ly, Lx, J, Dx, Dy, B, K, alpha, beta, ux, uy, h0, h1, h2)
+                k0, k1, k2 = _rhs_site(S, r, y, x, Ly, Lx, J, Dx, Dy, B, K, alpha, beta, ux, uy, omz, h0, h1, h2)
                 K1[r, y, x, 0] = k0
                 K1[r, y, x, 1] = k1
                 K1[r, y, x, 2] = k2
@@ -206,7 +211,7 @@ def heun_steps(S, Sp, K1, noise, nsteps, dt, J, Dx, Dy, B, K, alpha, beta, ux, u
             r = idx // Ly
             y = idx - r * Ly
             for x in range(Lx):
-                k0, k1, k2 = _rhs_site(Sp, r, y, x, Ly, Lx, J, Dx, Dy, B, K, alpha, beta, ux, uy,
+                k0, k1, k2 = _rhs_site(Sp, r, y, x, Ly, Lx, J, Dx, Dy, B, K, alpha, beta, ux, uy, omz,
                                        noise[r, y, x, 0], noise[r, y, x, 1], noise[r, y, x, 2])
                 n0 = S[r, y, x, 0] + 0.5 * dt * (K1[r, y, x, 0] + k0)
                 n1 = S[r, y, x, 1] + 0.5 * dt * (K1[r, y, x, 1] + k1)
@@ -295,12 +300,28 @@ def dmi_vectors(D, kind="neel", Dy_scale=1.0):
     raise ValueError(kind)
 
 
-def drive_field(kind, u0, Ly, Lx, theta=0.0):
+def shear_profiles(kind, u0, u3, Ly):
+    """Analytic u_x(y), omega(y) = -d_y u_x and psi(y) = int u_x dy for the y-dependent drives.
+
+    shear : u_x = u0 sin(ky);  shear3: u_x = u0 sin(ky) + u3 sin(3ky);  k = 2 pi / Ly.
+    rot   : no flow; omega(y) is the profile of the u0 shear (used for the P10 precession term).
+    """
+    k = 2 * np.pi / Ly
+    a3 = u3 if kind == "shear3" else 0.0
+    ux = lambda y: u0 * np.sin(k * y) + a3 * np.sin(3 * k * y)
+    om = lambda y: -k * (u0 * np.cos(k * y) + 3 * a3 * np.cos(3 * k * y))
+    psi = lambda y: -(u0 * np.cos(k * y) + a3 * np.cos(3 * k * y) / 3) / k
+    return ux, om, psi
+
+
+def drive_field(kind, u0, Ly, Lx, theta=0.0, u3=0.0):
     """u(r) arrays (ux, uy) of shape (Ly, Lx). Row index = y coordinate."""
     y = np.arange(Ly, dtype=FLOAT)[:, None] * np.ones((1, Lx))
-    if kind == "shear":
-        ux = u0 * np.sin(2 * np.pi * y / Ly)
+    if kind in ("shear", "shear3"):
+        ux = shear_profiles(kind, u0, u3, Ly)[0](y)
         uy = np.zeros_like(ux)
+    elif kind == "rot":
+        ux = np.zeros((Ly, Lx)); uy = np.zeros((Ly, Lx))
     elif kind == "uniform":
         ux = u0 * np.cos(theta) * np.ones((Ly, Lx))
         uy = u0 * np.sin(theta) * np.ones((Ly, Lx))
@@ -320,14 +341,19 @@ def omega_of_y(kind, u0, Ly, y):
 
 class Integrator:
     def __init__(self, S, J=1.0, D=0.3, B=0.12, K=0.0, alpha=0.1, beta=0.0, T=0.0,
-                 dt=0.02, drive="none", u0=0.0, theta=0.0, dmi="neel", Dy_scale=1.0, seed=0):
+                 dt=0.02, drive="none", u0=0.0, theta=0.0, dmi="neel", Dy_scale=1.0, seed=0,
+                 u3=0.0, rot_sign=1.0):
         self.S = np.ascontiguousarray(S, dtype=FLOAT)
         R, Ly, Lx, _ = self.S.shape
         self.Sp = np.empty_like(self.S)
         self.K1 = np.empty_like(self.S)
         self.noise = np.empty_like(self.S)
         self.Dx, self.Dy = dmi_vectors(D, dmi, Dy_scale)
-        self.ux, self.uy = drive_field(drive, u0, Ly, Lx, theta)
+        self.ux, self.uy = drive_field(drive, u0, Ly, Lx, theta, u3)
+        self.omz = np.zeros((Ly, Lx))
+        if drive == "rot":  # Omega = omega/2 of the u0 shear profile, at the site rows
+            y = np.arange(Ly, dtype=FLOAT)[:, None] * np.ones((1, Lx))
+            self.omz = np.ascontiguousarray(rot_sign * 0.5 * shear_profiles("shear", u0, 0.0, Ly)[1](y))
         self.p = dict(J=J, D=D, B=B, K=K, alpha=alpha, beta=beta, T=T, dt=dt)
         self.t = 0.0
         self.rng = make_rng(seed, R * Ly)
@@ -335,7 +361,7 @@ class Integrator:
     def run(self, nsteps):
         p = self.p
         heun_steps(self.S, self.Sp, self.K1, self.noise, nsteps, p["dt"], p["J"], self.Dx, self.Dy,
-                   p["B"], p["K"], p["alpha"], p["beta"], self.ux, self.uy, p["T"], self.rng,
+                   p["B"], p["K"], p["alpha"], p["beta"], self.ux, self.uy, self.omz, p["T"], self.rng,
                    ZIG_KN, ZIG_WN, ZIG_FN)
         self.t += nsteps * p["dt"]
 
