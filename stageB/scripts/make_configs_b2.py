@@ -21,7 +21,7 @@ pts = {
     "P14_ba": dict(beta=0.1, drive="shear3", u0=U0, u3=-U0 / 3, t_run=16000.0),
     # DMI dependence of the beta = alpha residual (B/D^2 = 4/3 as for D = 0.3, B = 0.12)
     "P11_D0.4": dict(drive="shear", u0=U0, D=0.4, B=0.4 ** 2 * 4 / 3, r_sk=1.9),
-    "P11_D0.2": dict(drive="shear", u0=U0, D=0.2, B=0.2 ** 2 * 4 / 3, r_sk=4.0),
+    "P11_D0.2": dict(drive="shear", u0=U0, D=0.2, B=0.2 ** 2 * 4 / 3, r_sk=4.0, t_run=11000.0),  # lower rate
     # alpha dependence of the beta = alpha residual
     "P12_a0.05": dict(drive="shear", u0=U0, alpha=0.05, beta=0.05),
     "P12_a0.2": dict(drive="shear", u0=U0, alpha=0.2, beta=0.2),
