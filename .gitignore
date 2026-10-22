@@ -2,3 +2,7 @@ __pycache__/
 *.pyc
 state.npz
 results/logs/
+# run outputs are added explicitly (git add -f) once a run has finished
+results/main/*/
+results/dep/*/
+results/ladder/*/
