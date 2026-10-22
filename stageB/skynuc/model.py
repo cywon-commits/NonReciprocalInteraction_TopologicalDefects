@@ -300,13 +300,13 @@ def dmi_vectors(D, kind="neel", Dy_scale=1.0):
     raise ValueError(kind)
 
 
-def shear_profiles(kind, u0, u3, Ly):
+def shear_profiles(kind, u0, u3, Ly, nper=1):
     """Analytic u_x(y), omega(y) = -d_y u_x and psi(y) = int u_x dy for the y-dependent drives.
 
-    shear : u_x = u0 sin(ky);  shear3: u_x = u0 sin(ky) + u3 sin(3ky);  k = 2 pi / Ly.
+    shear : u_x = u0 sin(ky);  shear3: u_x = u0 sin(ky) + u3 sin(3ky);  k = 2 pi nper / Ly.
     rot   : no flow; omega(y) is the profile of the u0 shear (used for the P10 precession term).
     """
-    k = 2 * np.pi / Ly
+    k = 2 * np.pi * nper / Ly
     a3 = u3 if kind == "shear3" else 0.0
     ux = lambda y: u0 * np.sin(k * y) + a3 * np.sin(3 * k * y)
     om = lambda y: -k * (u0 * np.cos(k * y) + 3 * a3 * np.cos(3 * k * y))
@@ -314,11 +314,11 @@ def shear_profiles(kind, u0, u3, Ly):
     return ux, om, psi
 
 
-def drive_field(kind, u0, Ly, Lx, theta=0.0, u3=0.0):
+def drive_field(kind, u0, Ly, Lx, theta=0.0, u3=0.0, nper=1):
     """u(r) arrays (ux, uy) of shape (Ly, Lx). Row index = y coordinate."""
     y = np.arange(Ly, dtype=FLOAT)[:, None] * np.ones((1, Lx))
     if kind in ("shear", "shear3"):
-        ux = shear_profiles(kind, u0, u3, Ly)[0](y)
+        ux = shear_profiles(kind, u0, u3, Ly, nper)[0](y)
         uy = np.zeros_like(ux)
     elif kind == "rot":
         ux = np.zeros((Ly, Lx)); uy = np.zeros((Ly, Lx))
@@ -342,18 +342,18 @@ def omega_of_y(kind, u0, Ly, y):
 class Integrator:
     def __init__(self, S, J=1.0, D=0.3, B=0.12, K=0.0, alpha=0.1, beta=0.0, T=0.0,
                  dt=0.02, drive="none", u0=0.0, theta=0.0, dmi="neel", Dy_scale=1.0, seed=0,
-                 u3=0.0, rot_sign=1.0):
+                 u3=0.0, rot_sign=1.0, nper=1):
         self.S = np.ascontiguousarray(S, dtype=FLOAT)
         R, Ly, Lx, _ = self.S.shape
         self.Sp = np.empty_like(self.S)
         self.K1 = np.empty_like(self.S)
         self.noise = np.empty_like(self.S)
         self.Dx, self.Dy = dmi_vectors(D, dmi, Dy_scale)
-        self.ux, self.uy = drive_field(drive, u0, Ly, Lx, theta, u3)
+        self.ux, self.uy = drive_field(drive, u0, Ly, Lx, theta, u3, nper)
         self.omz = np.zeros((Ly, Lx))
         if drive == "rot":  # Omega = omega/2 of the u0 shear profile, at the site rows
             y = np.arange(Ly, dtype=FLOAT)[:, None] * np.ones((1, Lx))
-            self.omz = np.ascontiguousarray(rot_sign * 0.5 * shear_profiles("shear", u0, 0.0, Ly)[1](y))
+            self.omz = np.ascontiguousarray(rot_sign * 0.5 * shear_profiles("shear", u0, 0.0, Ly, nper)[1](y))
         self.p = dict(J=J, D=D, B=B, K=K, alpha=alpha, beta=beta, T=T, dt=dt)
         self.t = 0.0
         self.rng = make_rng(seed, R * Ly)

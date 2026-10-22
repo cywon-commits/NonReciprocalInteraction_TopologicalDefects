@@ -13,7 +13,7 @@ from .topo import triangle_omega, find_jumps, window_dq, find_skyrmions, exclude
 DEFAULTS = dict(
     run_id="test", out_dir="results/runs",
     L=64, R=16, J=1.0, D=0.3, B=0.12, K=0.0, T=0.4, alpha=0.1, beta=0.0,
-    drive="shear", u0=0.0, theta=0.0, dmi="neel", Dy_scale=1.0, u3=0.0, rot_sign=1.0,
+    drive="shear", u0=0.0, theta=0.0, dmi="neel", Dy_scale=1.0, u3=0.0, rot_sign=1.0, nper=1,
     dt=0.02, dts=0.24, t_eq=200.0, t_run=1000.0, seed=1,
     nbands=16, Q_fav=-1, r_sk=2.56, sz_thr=0.0, rq=5.0, r_match=4.0, r_group=2.5,
     pending_time=5.0, checkpoint_wall=600.0, n_tblocks=8,
@@ -40,7 +40,7 @@ class Run:
         self.it = Integrator(uniform_state(R, L, L), J=c["J"], D=c["D"], B=c["B"], K=c["K"], alpha=c["alpha"],
                              beta=c["beta"], T=c["T"], dt=c["dt"], drive=c["drive"], u0=c["u0"],
                              theta=c["theta"], dmi=c["dmi"], Dy_scale=c["Dy_scale"], seed=c["seed"],
-                             u3=c["u3"], rot_sign=c["rot_sign"])
+                             u3=c["u3"], rot_sign=c["rot_sign"], nper=c["nper"])
         nb = c["nbands"]
         assert L % nb == 0
         self.bw = L // nb
@@ -387,7 +387,7 @@ class Run:
         # band averages of omega(y) and psi(y) over [edge_b, edge_b+1); for "rot" omega is the profile of the
         # u0 shear whose Omega = omega/2 drives the precession term (rot_sign only flips the dynamics)
         if c["drive"] in ("shear", "shear3", "rot"):
-            _, omf, psif = shear_profiles(c["drive"], c["u0"], c["u3"], L)
+            _, omf, psif = shear_profiles(c["drive"], c["u0"], c["u3"], L, c.get("nper", 1))
             yy = edges[:-1, None] + (np.arange(400)[None, :] + 0.5) / 400 * self.bw
             om, ps = omf(yy).mean(axis=1), psif(yy).mean(axis=1)
         else:
