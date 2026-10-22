@@ -1,0 +1,4 @@
+start configs/pilot/T0.50_u0.05.json
+start configs/pilot/T0.50_u0.10.json
+done configs/pilot/T0.50_u0.10.json rc 0 786s
+done configs/pilot/T0.50_u0.05.json rc 0 792s

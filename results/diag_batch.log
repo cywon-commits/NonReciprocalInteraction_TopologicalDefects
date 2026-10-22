@@ -1,0 +1,4 @@
+start configs/dep/diag_P5_a0.3.json
+start configs/dep/diag_P5_L128.json
+done configs/dep/diag_P5_a0.3.json rc 0 2687s
+done configs/dep/diag_P5_L128.json rc 0 3369s

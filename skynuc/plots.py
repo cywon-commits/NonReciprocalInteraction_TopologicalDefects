@@ -105,31 +105,49 @@ def _table():
 
 
 def fig_summary(tau_c="10"):
-    rows = [r for r in _table() if r["tau_c"] == tau_c and r["run"].startswith("P")]
-    fig, ax = plt.subplots(1, 2, figsize=(10, 3.8))
-    for r in rows:
-        if r["run"] in ("P7",):
+    """Combined slopes (results/combined.json) vs (beta - alpha)/alpha, and s_col vs s_nuc."""
+    comb = json.load(open("results/combined.json"))[f"tau{tau_c}"]
+    fit = comb.get("fit s_nuc = s_adv + k x")
+    fig, ax = plt.subplots(1, 2, figsize=(10.5, 4.0))
+    style = {  # group-name fragment -> (colour, marker, label)
+        "alpha=0.1 (P1": (C[0], "o", "α=0.1, L=64"), "beta=alpha=0.1 (P5": (C[0], "o", None),
+        "beta=2alpha": (C[0], "o", None), "alpha=0.3": (C[1], "o", "α=0.3, L=64"),
+        "L=128": (C[6], "D", "L=128, u₀=0.08 (same ω, 2u)"), "T=0.55": (C[2], "^", "T=0.55"),
+        "T=0.45": (C[3], "v", "T=0.45")}
+    seen = set()
+    for g, d in comb.items():
+        if "s_nuc" not in d or "reference" in g:
             continue
-        x = float(r["ueff_u0"]); y = float(r["nuc_s_glm"]); e = float(r["nuc_ds_jk"])
-        uni = r["drive"] == "uniform"
-        col = C[1] if float(r["alpha"]) == 0.3 else C[0]
-        if uni:
-            col = C[3]
-        ax[0].errorbar(x, y, yerr=e, fmt="s" if uni else "o", ms=7, color=col, elinewidth=1.2)
-        ax[0].annotate(r["run"], (x, y), textcoords="offset points", xytext=(6, 4), fontsize=8, color=INK2)
-        yc = float(r["col_s_glm"]); ec = float(r["col_ds_jk"])
-        ax[1].errorbar(y, yc, xerr=e, yerr=ec, fmt="s" if uni else "o", ms=7, color=col, elinewidth=1.2)
-        ax[1].annotate(r["run"], (y, yc), textcoords="offset points", xytext=(6, 4), fontsize=8, color=INK2)
-    ax[0].axhline(0, color=INK2, lw=0.8); ax[0].axvline(0, color=INK2, lw=0.8)
-    ax[0].set_xlabel("(β − α) u₀ / α   (u_eff amplitude)")
-    ax[0].set_ylabel(f"s_nuc = d ln Γ_nuc / dω   (τ_c = {tau_c})")
-    ax[0].set_title("Nucleation slope vs effective drive (blue α=0.1, orange α=0.3, yellow ω=0)", fontsize=8)
-    lim = max(abs(np.array(ax[1].get_xlim())).max(), abs(np.array(ax[1].get_ylim())).max())
-    xx = np.linspace(-lim, lim, 2)
-    ax[1].plot(xx, -xx, ls="--", color=INK2, lw=1, label="s_col = −s_nuc (local detailed balance)")
+        x = (d["beta"] - d["alpha"]) / d["alpha"]
+        key = next(k for k in style if k in g)
+        col, mk, lab = style[key]
+        lab = lab if lab and lab not in seen else None
+        if lab:
+            seen.add(lab)
+        dx = {"o": 0, "D": 0.06, "^": -0.06, "v": -0.12}[mk]
+        y, e = d["s_nuc"][0], d["s_nuc"][1]
+        ax[0].errorbar(x + dx, y, yerr=e, fmt=mk, ms=7, color=col, elinewidth=1.2, label=lab)
+        yc, ec = d["s_col"][0], d["s_col"][1]
+        ax[1].errorbar(y, yc, xerr=e, yerr=ec, fmt=mk, ms=7, color=col, elinewidth=1.2)
+    for g, d in comb.items():
+        if "reference" in g:
+            ax[0].errorbar(-1.25 if "uniform" in g else 1.25, d["s_nuc"][0], yerr=d["s_nuc"][1], fmt="s", ms=7,
+                           color=C[7] if "uniform" in g else INK2, elinewidth=1.2,
+                           label="P6 uniform u (ω=0)" if "uniform" in g else "P7 no drive")
+    if fit:
+        xx = np.linspace(-1.3, 1.3, 2)
+        ax[0].plot(xx, fit["s_adv"] + fit["k"] * xx, color=INK2, lw=1, ls="--",
+                   label=f"fit T=0.5: {fit['s_adv']:.0f} {fit['k']:+.0f}·(β−α)/α")
+    ax[0].axhline(0, color=INK2, lw=0.8); ax[0].axvline(0, color=GRID, lw=0.8)
+    ax[0].set_xlabel("(β − α)/α"); ax[0].set_ylabel(f"s_nuc = d ln Γ_nuc/dω  (τ_c={tau_c})")
+    ax[0].set_title("Nucleation slope (= c·Q_fav, Q_fav = −1); controls at the edges", fontsize=9)
+    ax[0].legend(fontsize=7, loc="upper right")
+    lim = 70
+    xx = np.linspace(-20, lim, 2)
+    ax[1].plot(xx, -xx, ls="--", color=INK2, lw=1, label="s_col = −s_nuc")
     ax[1].axhline(0, color=GRID, lw=0.8); ax[1].axvline(0, color=GRID, lw=0.8)
-    ax[1].set_xlabel("s_nuc"); ax[1].set_ylabel("s_col = d ln ν / dω")
-    ax[1].legend(fontsize=7); ax[1].set_title("Collapse vs nucleation slope", fontsize=9)
+    ax[1].set_xlabel("s_nuc"); ax[1].set_ylabel("s_col = d ln ν/dω"); ax[1].legend(fontsize=7)
+    ax[1].set_title("Collapse vs nucleation slope (combined groups)", fontsize=9)
     fig.tight_layout(); fig.savefig(f"{FIG}/summary.png"); plt.close(fig)
 
 

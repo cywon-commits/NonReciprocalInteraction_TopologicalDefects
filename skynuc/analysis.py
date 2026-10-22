@@ -63,9 +63,16 @@ def halves_y(N, expo, nb):
     return halves(N, expo, om)
 
 
+def _open(path):
+    import gzip
+    if not os.path.exists(path) and os.path.exists(path + ".gz"):
+        return gzip.open(path + ".gz", "rt")
+    return open(path)
+
+
 def read_events(path):
     ev = []
-    with open(path) as f:
+    with _open(path) as f:
         for row in csv.DictReader(f):
             ev.append(row)
     return ev
@@ -133,7 +140,7 @@ def analyse(run_dir, tau_c=(0.0, 2.0, 10.0), write=True):
         out["fit_nuc_vs_cos_profile"] = wls_fit(cnt["nuc"], A, om_ref)
     # committed (recrossing-filtered) variants
     evp = os.path.join(run_dir, "events.csv")
-    if os.path.exists(evp):
+    if os.path.exists(evp) or os.path.exists(evp + ".gz"):
         ev = read_events(evp)
         t_end = c["t_eq"] + c["t_run"]
         lt = lifetimes(ev)
@@ -289,7 +296,7 @@ def analyse_chains(run_dir, tau_c=2.0, r_c=4.0):
 
 # ---------------- object-based rates (primary definition) ----------------
 def read_objects(path):
-    with open(path) as f:
+    with _open(path) as f:
         return list(csv.DictReader(f))
 
 
