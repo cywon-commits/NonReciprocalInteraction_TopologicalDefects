@@ -224,7 +224,8 @@ class Run:
         for r in range(self.R):
             lst = []
             # largest clusters first; fragments of the same texture (within 3 sites) are dropped
-            for k in sorted(range(cnt[r]), key=lambda k: -out[r, k, 3]):
+            cand = [k for k in range(cnt[r]) if abs(out[r, k, 2]) > 0.5]  # thermal specks have Qc ~ 0
+            for k in sorted(cand, key=lambda k: -out[r, k, 3]):
                 cx, cy, Qc, size = out[r, k]
                 if any(np.hypot(_mind(cx, o[0], self.L), _mind(cy, o[1], self.L)) < 3.0 for o in lst):
                     continue

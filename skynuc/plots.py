@@ -63,3 +63,37 @@ def fig_validation():
 if __name__ == "__main__":
     for name in sys.argv[1:]:
         globals()["fig_" + name]()
+
+
+def fig_points(dirs, tau_c=10.0, out="points.png", ncol=3):
+    """ln Gamma_nuc(y) and ln nu_col(y) vs omega(y) for each run, with GLM fit lines."""
+    import sys as _s
+    _s.path.insert(0, ".")
+    from skynuc.analysis import analyse_objects
+    os.makedirs(FIG, exist_ok=True)
+    n = len(dirs); nr = int(np.ceil(n / ncol))
+    fig, axs = plt.subplots(nr, ncol, figsize=(4.2 * ncol, 3.0 * nr), squeeze=False)
+    for ax, d in zip(axs.ravel(), dirs):
+        o = analyse_objects(d, tau_c)
+        om = np.array(o["omega_band"])
+        for kind, col, lab in (("nuc", C[0], "nucleation  ln Γ"), ("col", C[1], "collapse  ln ν")):
+            r = o[kind]
+            if "lnrate_band" not in r:
+                continue
+            y = np.array([np.nan if v is None else v for v in r["lnrate_band"]])
+            N = np.array(r["N_band"])
+            yc = y - np.nanmean(y)
+            err = 1 / np.sqrt(np.maximum(N, 1))
+            ax.errorbar(om, yc, yerr=err, fmt="o", ms=5, color=col, elinewidth=1, capsize=0,
+                        label=f"{lab}: s={r['s_glm']:+.1f}±{r['ds_jk']:.1f}")
+            xx = np.linspace(om.min(), om.max(), 2)
+            ax.plot(xx, r["s_glm"] * (xx - om.mean()), color=col, lw=1.5)
+        ax.axhline(0, color=INK2, lw=0.6)
+        ttl = f"{o['run_id']}  (β−α)/α={o['ueff_factor']:+.0f}, u₀={o['u0']:+.3g}"
+        ax.set_title(ttl, fontsize=8)
+        ax.set_xlabel("ω(y)" if o["drive"] == "shear" else "reference ω profile (u₀=1)")
+        ax.set_ylabel("log rate − mean")
+        ax.legend(fontsize=7, loc="upper left")
+    for ax in axs.ravel()[n:]:
+        ax.axis("off")
+    fig.tight_layout(); fig.savefig(f"{FIG}/{out}"); plt.close(fig)

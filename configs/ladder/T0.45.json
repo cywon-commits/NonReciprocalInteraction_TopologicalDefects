@@ -1,0 +1,16 @@
+{
+ "out_dir": "results/ladder",
+ "L": 64,
+ "R": 16,
+ "T": 0.45,
+ "t_eq": 200.0,
+ "t_run": 6000.0,
+ "dts": 0.06,
+ "dt": 0.02,
+ "run_id": "ladder_T0.45",
+ "seed": 4500,
+ "alpha": 0.1,
+ "beta": 0.0,
+ "drive": "none",
+ "u0": 0.0
+}

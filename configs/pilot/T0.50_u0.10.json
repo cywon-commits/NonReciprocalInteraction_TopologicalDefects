@@ -1,0 +1,2 @@
+{"run_id": "pilot_T0.50_u0.10", "out_dir": "results/pilot", "L": 64, "R": 16, "T": 0.50, "alpha": 0.1, "beta": 0.0,
+ "drive": "shear", "u0": 0.10, "t_eq": 200.0, "t_run": 3000.0, "seed": 6100, "dts": 0.12}
