@@ -1,0 +1,5 @@
+{"case": "cellular", "G": 1.0, "alpha": 0.3, "beta": 0.6, "fit_G_over_T": 0.9942, "pred_G_over_T": 1.0, "max_dev_rel": 0.0213, "ratio_vortex": 18.46, "pred_ratio_vortex": 18.66}
+{"case": "cellular", "G": 1.0, "alpha": 0.1, "beta": 0.3, "fit_G_over_T": 0.9938, "pred_G_over_T": 1.0, "max_dev_rel": 0.0253, "ratio_vortex": 18.09, "pred_ratio_vortex": 18.66}
+{"case": "cellular", "G": 1.0, "alpha": 0.3, "beta": 0.1, "fit_G_over_T": 0.995, "pred_G_over_T": 1.0, "max_dev_rel": 0.0212, "ratio_vortex": 18.92, "pred_ratio_vortex": 18.66}
+{"case": "cellular", "G": 1.0, "alpha": 0.9, "beta": 1.8, "fit_G_over_T": 0.9907, "pred_G_over_T": 1.0, "max_dev_rel": 0.0195, "ratio_vortex": 18.28, "pred_ratio_vortex": 18.66}
+{"case": "cellular", "G": -1.0, "alpha": 0.3, "beta": 0.6, "fit_G_over_T": -0.9874, "pred_G_over_T": -1.0, "max_dev_rel": 0.0238, "ratio_vortex": 0.06, "pred_ratio_vortex": 18.66}

@@ -1,0 +1,5 @@
+1 1 1 {"first_coef_1/(lamT^2)": -0.0, "T3_static": 0.000327479, "T3_diss": 0.000272899, "T3_gyro_1/(lam^2T^3)": -0.0}
+1 0.5 1 {"first_coef_1/(lamT^2)": -0.0, "T3_static": 8.18698e-05, "T3_diss": 6.82249e-05, "T3_gyro_1/(lam^2T^3)": -0.0}
+1 1 -1 {"first_coef_1/(lamT^2)": -0.0, "T3_static": -0.000327479, "T3_diss": -0.000272899, "T3_gyro_1/(lam^2T^3)": -0.0}
+1 -1 1 {"first_coef_1/(lamT^2)": -0.0, "T3_static": 0.000327479, "T3_diss": 0.000272899, "T3_gyro_1/(lam^2T^3)": -0.0}
+0 1 1 {"first_coef_1/(lamT^2)": -0.0, "T3_static": 0.000327479, "T3_diss": 0.000272899, "T3_gyro_1/(lam^2T^3)": -0.0}

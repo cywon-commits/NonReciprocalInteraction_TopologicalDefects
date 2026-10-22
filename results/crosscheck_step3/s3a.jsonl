@@ -1,0 +1,6 @@
+{"G": 2.0, "alpha": 0.5, "ratio": 3.0, "T": 2.0, "extra": 0.0, "advect": true, "phi_meas": -0.4451805683685206, "phi_pred": -0.44638996589653446, "phi_uniform": 0.0, "TV_dist": 0.003144489877969602}
+{"G": 2.0, "alpha": 0.5, "ratio": 3.0, "T": 2.0, "extra": 0.0, "advect": false, "phi_meas": -0.44339798903109306, "phi_pred": -0.44638996589653446, "phi_uniform": 0.0, "TV_dist": 0.005264129849091245}
+{"G": 2.0, "alpha": 0.2, "ratio": 3.0, "T": 2.0, "extra": 0.0, "advect": true, "phi_meas": -0.44514549422449823, "phi_pred": -0.44638996589653446, "phi_uniform": 0.0, "TV_dist": 0.003588183901200383}
+{"G": -2.0, "alpha": 0.5, "ratio": 3.0, "T": 2.0, "extra": 0.0, "advect": true, "phi_meas": 0.445219174202867, "phi_pred": 0.44638996589653446, "phi_uniform": 0.0, "TV_dist": 0.003149149996900382}
+{"G": 2.0, "alpha": 0.5, "ratio": 0.0, "T": 2.0, "extra": 0.0, "advect": true, "phi_meas": 0.24208483652814847, "phi_pred": 0.24249961258080188, "phi_uniform": 0.0, "TV_dist": 0.002455802540270704}
+{"G": 2.0, "alpha": 0.5, "ratio": 3.0, "T": 2.0, "extra": 1.0, "advect": true, "phi_meas": -0.15969055076784222, "phi_pred": -0.44638996589653446, "phi_uniform": 0.0, "TV_dist": 0.30027951047804624}

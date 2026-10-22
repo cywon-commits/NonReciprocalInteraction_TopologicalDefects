@@ -1,0 +1,5 @@
+python thiele_psi.py cellular '{"alpha":0.3,"beta":0.6}'
+python thiele_psi.py cellular '{"alpha":0.1,"beta":0.3}'
+python thiele_psi.py cellular '{"alpha":0.3,"beta":0.1}'
+python thiele_psi.py cellular '{"alpha":0.9,"beta":1.8}'
+python thiele_psi.py cellular '{"alpha":0.3,"beta":0.6,"G":-1.0}'

@@ -1,0 +1,5 @@
+{"case": "strip", "mod": 0.0, "G": 1.0, "alpha": 0.3, "beta": 0.6, "max_dev_rel": 0.0053, "edge_ratio_meas": 131.111, "edge_ratio_pred": 130.974, "fit_inv_ell": 0.4974, "pred_inv_ell": 0.5}
+{"case": "strip", "mod": 0.0, "G": 1.0, "alpha": 0.1, "beta": 0.3, "max_dev_rel": 0.0249, "edge_ratio_meas": 99.11, "edge_ratio_pred": 130.974, "fit_inv_ell": 0.4714, "pred_inv_ell": 0.5}
+{"case": "strip", "mod": 0.0, "G": -1.0, "alpha": 0.3, "beta": 0.6, "max_dev_rel": 0.0039, "edge_ratio_meas": 120.179, "edge_ratio_pred": 130.974, "fit_inv_ell": -0.4947, "pred_inv_ell": -0.5}
+{"case": "strip", "mod": 0.8, "G": 1.0, "alpha": 0.3, "beta": 0.6, "max_dev_rel": 0.0064, "edge_ratio_meas": 121.739, "edge_ratio_pred": 130.974}
+{"case": "strip", "mod": 0.8, "G": 1.0, "alpha": 0.3, "beta": 0.1, "max_dev_rel": 0.0064, "edge_ratio_meas": 121.739, "edge_ratio_pred": 130.974}

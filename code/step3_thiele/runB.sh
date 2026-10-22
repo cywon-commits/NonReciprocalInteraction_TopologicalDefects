@@ -1,0 +1,5 @@
+python thiele_psi.py strip '{"alpha":0.3,"beta":0.6}'
+python thiele_psi.py strip '{"alpha":0.1,"beta":0.3}'
+python thiele_psi.py strip '{"alpha":0.3,"beta":0.6,"G":-1.0}'
+python thiele_psi.py strip '{"alpha":0.3,"beta":0.6,"mod":0.8}'
+python thiele_psi.py strip '{"alpha":0.3,"beta":0.1,"mod":0.8}'
