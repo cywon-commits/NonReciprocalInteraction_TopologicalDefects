@@ -2,3 +2,11 @@ start configs/main/P3.json
 start configs/main/P4.json
 start configs/main/P6.json
 start configs/main/P8.json
+done configs/main/P6.json rc 0 2416s
+start configs/main/P9.json
+done configs/main/P8.json rc 0 2418s
+start configs/main/P1_dt0.01.json
+done configs/main/P3.json rc 0 2424s
+start configs/ladder/T0.60.json
+done configs/main/P4.json rc 0 2448s
+start configs/ladder/T0.55.json
