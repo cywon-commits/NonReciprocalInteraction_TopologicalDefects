@@ -1,0 +1,2 @@
+{"run_id": "calib_T0.45", "out_dir": "results/calib", "L": 64, "R": 8, "T": 0.45, "alpha": 0.1, "beta": 0.0,
+ "drive": "none", "u0": 0.0, "t_eq": 200.0, "t_run": 1000.0, "seed": 450}
