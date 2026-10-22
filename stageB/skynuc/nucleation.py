@@ -74,6 +74,14 @@ class Run:
     def load(self):
         z = np.load(os.path.join(self.dir, "state.npz"))
         self.it.S[...] = z["S"]; self.it.rng[...] = z["rng"]; self.it.t = float(z["t"])
+        # drop rows written after the checkpoint (they would be produced again after resuming)
+        for fn, col in (("events.csv", "t"), ("objects.csv", "t_death")):
+            path = os.path.join(self.dir, fn)
+            if os.path.exists(path):
+                lines = open(path).read().splitlines(keepends=True)
+                k = lines[0].rstrip("\n").split(",").index(col)
+                keep = [lines[0]] + [ln for ln in lines[1:] if ln.endswith("\n") and float(ln.split(",")[k]) <= self.it.t + 1e-9]
+                open(path, "w").writelines(keep)
         self.phase = str(z["phase"])
         for k, v in self.acc.items():
             if isinstance(v, dict):
