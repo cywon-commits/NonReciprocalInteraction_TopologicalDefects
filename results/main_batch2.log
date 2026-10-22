@@ -10,3 +10,11 @@ done configs/main/P3.json rc 0 2424s
 start configs/ladder/T0.60.json
 done configs/main/P4.json rc 0 2448s
 start configs/ladder/T0.55.json
+done configs/ladder/T0.60.json rc 0 706s
+start configs/ladder/T0.45.json
+done configs/ladder/T0.55.json rc 0 880s
+start configs/ladder/T0.40.json
+done configs/ladder/T0.45.json rc 0 1534s
+done configs/ladder/T0.40.json rc 0 1486s
+done configs/main/P9.json rc 0 2412s
+done configs/main/P1_dt0.01.json rc 0 3711s

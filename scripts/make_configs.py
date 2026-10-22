@@ -37,3 +37,16 @@ for name in ("P1", "P4", "P5"):
     p = dict(points[name], u0=2 * U0)
     cfg = dict(base, run_id=name + "_u2x", seed=3000 + int(name[1]), **p)
     json.dump(cfg, open(os.path.join(ROOT, f"configs/main/{name}_u2x.json"), "w"), indent=1)
+# 1C dependence runs
+os.makedirs(os.path.join(ROOT, "configs/dep"), exist_ok=True)
+dep = {
+    "dep_T0.55_P1": dict(T=0.55, **points["P1"]),
+    "dep_T0.55_P4": dict(T=0.55, **points["P4"]),
+    "dep_T0.45_P1": dict(T=0.45, t_run=16000.0, **points["P1"]),
+    # same omega profile as P1 with twice the current: L doubled, u0 doubled
+    "dep_L128_P1": dict(L=128, t_run=2500.0, **dict(points["P1"], u0=2 * U0)),
+}
+for i, (name, p) in enumerate(dep.items()):
+    cfg = dict(base, out_dir="results/dep", run_id=name, seed=4000 + i)
+    cfg.update(p)
+    json.dump(cfg, open(os.path.join(ROOT, f"configs/dep/{name}.json"), "w"), indent=1)
