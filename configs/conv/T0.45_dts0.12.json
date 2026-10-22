@@ -1,0 +1,2 @@
+{"run_id": "conv_T0.45_dts0.12", "out_dir": "results/conv", "L": 64, "R": 16, "T": 0.45, "alpha": 0.1, "beta": 0.0,
+ "drive": "none", "u0": 0.0, "t_eq": 200.0, "t_run": 3000.0, "seed": 4545, "dts": 0.12}

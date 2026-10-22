@@ -16,7 +16,8 @@ DEFAULTS = dict(
     drive="shear", u0=0.0, theta=0.0, dmi="neel", Dy_scale=1.0,
     dt=0.02, dts=0.24, t_eq=200.0, t_run=1000.0, seed=1,
     nbands=16, Q_fav=-1, r_sk=2.56, sz_thr=0.0, rq=5.0, r_match=4.0, r_group=2.5,
-    pending_time=5.0, checkpoint_wall=600.0,
+    pending_time=5.0, checkpoint_wall=600.0, n_tblocks=8,
+    obj_match=3.0, obj_gap=1.0, tau_est=[2.0, 5.0, 10.0, 20.0],
 )
 
 KINDS = ["nuc", "col", "anti_nuc", "anti_col", "pair", "multi"]
@@ -46,6 +47,8 @@ class Run:
             counts={k: np.zeros(nb, np.int64) for k in KINDS},
             flagged={k: np.zeros(nb, np.int64) for k in KINDS},
             area_time=np.zeros(nb), sk_time=np.zeros(nb), anti_time=np.zeros(nb),
+            area_rkb=np.zeros((R, c["n_tblocks"], nb)), sk_rkb=np.zeros((R, c["n_tblocks"], nb)),
+            est_rkb=np.zeros((len(c["tau_est"]), R, c["n_tblocks"], nb)),
             drift_dx=np.zeros(nb), drift_dy=np.zeros(nb), drift_dt=np.zeros(nb), drift_n=np.zeros(nb, np.int64),
             n_samples=0, t_meas=0.0, jump_total=0, dQ_mismatch=0, n_sk_hist=np.zeros(64, np.int64),
             dqw_hist=np.zeros(80, np.int64), Q_total_hist=np.zeros(41, np.int64), next_id=0,
@@ -87,6 +90,8 @@ class Run:
             open(os.path.join(self.dir, "events.csv"), "w").write(
                 "run_id,replica,t,x,y,dQ,kind,flag,dq_w,n_jumps,obj_id,lifetime\n")
             json.dump(c, open(os.path.join(self.dir, "config.json"), "w"), indent=1)
+            open(os.path.join(self.dir, "objects.csv"), "w").write(
+                "run_id,replica,obj,sign,t_birth,x_birth,y_birth,t_death,x_death,y_death,lifetime,censored,n_frames\n")
         if self.phase == "eq":
             nleft = int(round((c["t_eq"] - self.it.t) / c["dt"]))
             while nleft > 0:
@@ -108,6 +113,10 @@ class Run:
         pending = [[] for _ in range(R)]  # recent nucleations not yet seen as clusters: [x, y, sign, t, id]
         fcsv = open(os.path.join(self.dir, "events.csv"), "a")
         w = csv.writer(fcsv)
+        fobj = open(os.path.join(self.dir, "objects.csv"), "a")
+        self.wobj = csv.writer(fobj)
+        self.objs = [dict() for _ in range(R)]
+        self.objects_update(sk_old, it.t, initial=True)
         t_end = c["t_eq"] + c["t_run"]
         last_ck = time.time()
         a = self.acc
@@ -136,15 +145,72 @@ class Run:
                     self.classify(r, grp, t, sk_old, pending, q_old, q_new, w)
             sk_new = self.track(q_new)
             self.link(sk_old, sk_new, pending, t)
+            self.objects_update(sk_new, t)
             Om_old, Om_new = Om_new, Om_old
             q_old = q_new; sk_old = sk_new; Qtot_old = Qtot
             for Qr in Qtot:
                 a["Q_total_hist"][min(max(Qr + 20, 0), 40)] += 1
             if time.time() - last_ck > c["checkpoint_wall"]:
-                fcsv.flush(); self.save(); last_ck = time.time()
-        fcsv.close()
+                fcsv.flush(); fobj.flush(); self.save(); last_ck = time.time()
+        for r in range(R):
+            for oid in list(self.objs[r]):
+                self.objects_finalize(r, oid, censored=1)
+        fcsv.close(); fobj.close()
         self.phase = "done"
         self.save()
+
+    # ---------- object tracker (primary nucleation / collapse definition) ----------
+    def objects_update(self, sk, t, initial=False):
+        """Match tracked clusters to live objects (same sign, within obj_match, unseen for <= obj_gap).
+
+        Unmatched clusters start new objects (born at t; born_before_meas if initial). Objects unseen for
+        longer than obj_gap die at their last-seen time. Established-object time (age >= tau) is
+        accumulated per band for each tau in tau_est."""
+        c, L, a = self.c, self.L, self.acc
+        dts = c["dts"]
+        kblk = min(int((t - c["t_eq"]) / c["t_run"] * c["n_tblocks"]), c["n_tblocks"] - 1)
+        for r in range(self.R):
+            live = self.objs[r]
+            pairs = []
+            for i, s in enumerate(sk[r]):
+                for oid, o in live.items():
+                    if o["sign"] != s[2]:
+                        continue
+                    d = np.hypot(_mind(s[0], o["x"], L), _mind(s[1], o["y"], L))
+                    if d < c["obj_match"]:
+                        pairs.append((d, i, oid))
+            pairs.sort()
+            used_c, used_o = set(), set()
+            for d, i, oid in pairs:
+                if i in used_c or oid in used_o:
+                    continue
+                used_c.add(i); used_o.add(oid)
+                o = live[oid]; s = sk[r][i]
+                o["x"], o["y"], o["last"] = s[0], s[1], t
+                o["n"] += 1
+            for i, s in enumerate(sk[r]):
+                if i in used_c:
+                    continue
+                oid = self.new_id()
+                live[oid] = dict(sign=s[2], birth=(np.nan if initial else t), bx=s[0], by=s[1],
+                                 x=s[0], y=s[1], last=t, n=1)
+            for oid in list(live):
+                o = live[oid]
+                if t - o["last"] > c["obj_gap"]:
+                    self.objects_finalize(r, oid, censored=0)
+                elif not initial and o["sign"] == c["Q_fav"] and o["last"] == t:
+                    age = t - o["birth"] if not np.isnan(o["birth"]) else np.inf
+                    b = self.band(o["y"])
+                    for j, tau in enumerate(c["tau_est"]):
+                        if age >= tau:
+                            a["est_rkb"][j, r, kblk, b] += dts
+
+    def objects_finalize(self, r, oid, censored):
+        o = self.objs[r].pop(oid)
+        life = o["last"] - o["birth"]
+        self.wobj.writerow([self.c["run_id"], r, oid, o["sign"], f"{o['birth']:.3f}", f"{o['bx']:.3f}",
+                            f"{o['by']:.3f}", f"{o['last']:.3f}", f"{o['x']:.3f}", f"{o['y']:.3f}",
+                            f"{life:.3f}", censored, o["n"]])
 
     # ---------- helpers ----------
     def new_id(self):
@@ -157,12 +223,14 @@ class Run:
         sk = []
         for r in range(self.R):
             lst = []
-            for k in range(cnt[r]):
+            # largest clusters first; fragments of the same texture (within 3 sites) are dropped
+            for k in sorted(range(cnt[r]), key=lambda k: -out[r, k, 3]):
                 cx, cy, Qc, size = out[r, k]
+                if any(np.hypot(_mind(cx, o[0], self.L), _mind(cy, o[1], self.L)) < 3.0 for o in lst):
+                    continue
                 m = int(np.rint(Qc))
-                if abs(m) == 1 and abs(Qc - m) < 0.4:
-                    lst.append([cx, cy, m, size, -1, np.nan])  # id, birth time set by link()
-            sk.append(lst)
+                lst.append([cx, cy, m, size, -1, np.nan, Qc])  # id, birth time set by link()
+            sk.append([o[:6] for o in lst if abs(o[2]) == 1 and abs(o[6] - o[2]) < 0.4])
         return sk
 
     def band(self, y):
@@ -175,6 +243,8 @@ class Run:
         a["n_samples"] += 1
         a["t_meas"] += dts
         area = np.full(nb, bw * L * self.R, float)
+        kblk = min(int((self.it.t - c["t_eq"]) / c["t_run"] * c["n_tblocks"]), c["n_tblocks"] - 1)
+        a["area_rkb"][:, kblk, :] += bw * L * dts
         ntot = 0
         for r in range(self.R):
             lst = sk[r]
@@ -182,10 +252,13 @@ class Run:
             if lst:
                 cen = np.array([[s[0], s[1]] for s in lst])
                 rows = excluded_rows(cen, len(lst), L, L, rex)
-                area -= rows.reshape(nb, bw).sum(axis=1)
+                ex = rows.reshape(nb, bw).sum(axis=1)
+                area -= ex
+                a["area_rkb"][r, kblk, :] -= ex * dts
                 for s in lst:
                     if s[2] == c["Q_fav"]:
                         a["sk_time"][self.band(s[1])] += dts
+                        a["sk_rkb"][r, kblk, self.band(s[1])] += dts
                     else:
                         a["anti_time"][self.band(s[1])] += dts
         a["area_time"] += area * dts

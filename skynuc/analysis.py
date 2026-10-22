@@ -166,3 +166,220 @@ if __name__ == "__main__":
     for d in sys.argv[1:]:
         o = analyse(d)
         print(json.dumps({k: o[k] for k in o if not k.endswith("_band") and k != "counts_band"}, indent=1, default=float))
+
+
+# ---------------- space-time chains (recrossing removal) ----------------
+# chains_all(): events of one replica that follow each other within tau_c and r_c (periodic) are merged.
+# A chain with fav_net = +1 is one net nucleation of the favoured skyrmion, -1 one net collapse,
+# 0 a transient (failed nucleation, or collapse followed by renucleation). (t, x, y) = first event.
+FAV_SIGN = {"nuc": +1, "col": -1}           # favoured-skyrmion number change
+ANTI_SIGN = {"anti_nuc": +1, "anti_col": -1}
+
+
+def chains_all(ev, tau_c=2.0, r_c=4.0, L=64):
+    by_r = {}
+    for e in ev:
+        by_r.setdefault(int(e["replica"]), []).append(e)
+    out = []
+    for r, lst in by_r.items():
+        lst.sort(key=lambda e: float(e["t"]))
+        live = []
+        for e in lst:
+            t, x, y = float(e["t"]), float(e["x"]), float(e["y"])
+            live = [c for c in live if t - c["t_last"] <= tau_c]
+            best = None
+            for ch in live:
+                dx = (x - ch["x_last"] + L / 2) % L - L / 2
+                dy = (y - ch["y_last"] + L / 2) % L - L / 2
+                if dx * dx + dy * dy <= r_c * r_c:
+                    best = ch
+                    break
+            if best is None:
+                best = dict(replica=r, t=t, x=x, y=y, fav_net=0, anti_net=0, n=0, flagged=0)
+                live.append(best)
+                out.append(best)
+            best["t_last"], best["x_last"], best["y_last"] = t, x, y
+            best["fav_net"] += FAV_SIGN.get(e["kind"], 0)
+            best["anti_net"] += ANTI_SIGN.get(e["kind"], 0)
+            best["n"] += 1
+            best["flagged"] |= int(e["flag"]) | int(e["kind"] in ("pair", "multi"))
+    return out
+
+
+def chain_counts(run_dir, tau_c=2.0, r_c=4.0):
+    s = json.load(open(os.path.join(run_dir, "summary.json")))
+    c = s["config"]
+    nb = c["nbands"]; L = c["L"]; bw = L // nb; R = c["R"]; nk = c.get("n_tblocks", 1)
+    ev = read_events(os.path.join(run_dir, "events.csv"))
+    ch = chains_all(ev, tau_c=tau_c, r_c=r_c, L=L)
+    shp = (R, nk, nb)
+    cnt = {k: np.zeros(shp) for k in ("nuc", "col", "anti_nuc", "anti_col", "transient")}
+    nflag = {k: 0 for k in cnt}
+    for h in ch:
+        k = min(int((h["t"] - c["t_eq"]) / c["t_run"] * nk), nk - 1)
+        idx = (h["replica"], k, int(np.floor(h["y"])) // bw % nb)
+        kinds = []
+        if h["fav_net"] == 1: kinds.append("nuc")
+        elif h["fav_net"] == -1: kinds.append("col")
+        if h["anti_net"] == 1: kinds.append("anti_nuc")
+        elif h["anti_net"] == -1: kinds.append("anti_col")
+        if h["fav_net"] == 0 and h["anti_net"] == 0: kinds.append("transient")
+        for kd in kinds:
+            cnt[kd][idx] += 1
+            nflag[kd] += h["flagged"]
+    area = np.array(s["area_rkb"]) if "area_rkb" in s else None
+    sk = np.array(s["sk_rkb"]) if "sk_rkb" in s else None
+    return s, cnt, nflag, area, sk
+
+
+def jackknife(fun, N, E, om):
+    """Delete-one-block jackknife over the (replica, time-block) axes of N[r,k,b], E[r,k,b]."""
+    R, K, _ = N.shape
+    full = fun(N.sum((0, 1)), E.sum((0, 1)), om)
+    vals = []
+    for r in range(R):
+        for k in range(K):
+            Nm = N.sum((0, 1)) - N[r, k]; Em = E.sum((0, 1)) - E[r, k]
+            vals.append(fun(Nm, Em, om))
+    vals = np.array(vals); n = len(vals)
+    err = np.sqrt((n - 1) / n * ((vals - vals.mean()) ** 2).sum()) if n > 1 else np.nan
+    return full, err
+
+
+def _glm_s(N, E, om):
+    return glm_fit(N, E, om)["s"]
+
+
+def _lnR(N, E, om):
+    return halves(N, E, om)["lnR"]
+
+
+def analyse_chains(run_dir, tau_c=2.0, r_c=4.0):
+    s, cnt, nflag, area, sk = chain_counts(run_dir, tau_c, r_c)
+    c = s["config"]; nb = c["nbands"]
+    om = np.array(s["omega_band"])
+    if c["drive"] != "shear":
+        L = c["L"]; bw = L // nb; edges = np.arange(nb + 1) * bw
+        # reference profile -cos(2 pi y / L) (band average), to test for spurious y dependence
+        om = -(1.0 / bw) * (np.sin(2 * np.pi * edges[1:] / L) - np.sin(2 * np.pi * edges[:-1] / L)) * 2 * np.pi / L
+        om_kind = "reference -2pi/L cos(2pi y/L) (u0=1 shear profile)"
+    else:
+        om_kind = "shear"
+    out = dict(run_id=c["run_id"], tau_c=tau_c, r_c=r_c, omega_kind=om_kind, T=c["T"], alpha=c["alpha"],
+               beta=c["beta"], drive=c["drive"], u0=c["u0"], L=c["L"], R=c["R"], t_run=c["t_run"], dts=c["dts"],
+               N={k: int(v.sum()) for k, v in cnt.items()}, N_flagged=nflag,
+               ueff_factor=(c["beta"] - c["alpha"]) / c["alpha"])
+    for kind, E in (("nuc", area), ("col", sk), ("anti_nuc", area)):
+        N = cnt[kind]
+        if E is None or N.sum() < 3:
+            continue
+        Nb, Eb = N.sum((0, 1)), E.sum((0, 1))
+        w = wls_fit(Nb, Eb, om); g = glm_fit(Nb, Eb, om); h = halves(Nb, Eb, om)
+        _, s_jk = jackknife(_glm_s, N, E, om)
+        _, r_jk = jackknife(_lnR, N, E, om)
+        out[kind] = dict(s_wls=w["s"], ds_wls_poisson=w["ds"], chi2dof=w["chi2dof"], s_glm=g["s"],
+                         ds_glm_poisson=g["ds"], ds_glm_jackknife=s_jk, lnR=h["lnR"], dlnR_poisson=h["dlnR"],
+                         dlnR_jackknife=r_jk, Np=h["Np"], Nn=h["Nn"],
+                         rate=float(Nb.sum() / Eb.sum()),
+                         lnrate_band=np.log(np.where(Nb > 0, Nb, np.nan) / Eb).tolist(),
+                         N_band=Nb.tolist(), E_band=Eb.tolist())
+    out["omega_band"] = om.tolist()
+    return out
+
+
+# ---------------- object-based rates (primary definition) ----------------
+def read_objects(path):
+    with open(path) as f:
+        return list(csv.DictReader(f))
+
+
+def object_counts(run_dir, tau_c=5.0):
+    """Band counts of nucleations (births of objects that live >= tau_c) and collapses (deaths of objects
+    that lived >= tau_c), per (replica, time block, band). Returns summary, counts, exposures."""
+    s = json.load(open(os.path.join(run_dir, "summary.json")))
+    c = s["config"]
+    nb = c["nbands"]; L = c["L"]; bw = L // nb; R = c["R"]; nk = c["n_tblocks"]
+    taus = list(c["tau_est"])
+    if tau_c not in taus:
+        raise ValueError(f"tau_c must be one of {taus}")
+    j = taus.index(tau_c)
+    t0, t1 = c["t_eq"], c["t_eq"] + c["t_run"]
+    cnt = {k: np.zeros((R, nk, nb)) for k in ("nuc", "col", "anti_nuc")}
+    lifes = []
+    for o in read_objects(os.path.join(run_dir, "objects.csv")):
+        sign = int(o["sign"]); life = float(o["lifetime"]); cens = int(o["censored"])
+        tb = float(o["t_birth"]); td = float(o["t_death"])
+        fav = sign == c["Q_fav"]
+        if not np.isnan(tb) and life >= tau_c:
+            kind = "nuc" if fav else "anti_nuc"
+            k = min(int((tb - t0) / c["t_run"] * nk), nk - 1)
+            cnt[kind][int(o["replica"]), k, int(np.floor(float(o["y_birth"]))) // bw % nb] += 1
+        if fav and not np.isnan(tb):
+            lifes.append((life, cens))
+        if fav and not cens and (np.isnan(tb) or life >= tau_c):
+            k = min(int((td - t0) / c["t_run"] * nk), nk - 1)
+            cnt["col"][int(o["replica"]), k, int(np.floor(float(o["y_death"]))) // bw % nb] += 1
+    E = dict(nuc=np.array(s["area_rkb"]), anti_nuc=np.array(s["area_rkb"]), col=np.array(s["est_rkb"])[j])
+    return s, cnt, E, lifes
+
+
+def analyse_objects(run_dir, tau_c=5.0):
+    s, cnt, E, lifes = object_counts(run_dir, tau_c)
+    c = s["config"]; nb = c["nbands"]; L = c["L"]; bw = L // nb
+    if c["drive"] == "shear":
+        om = np.array(s["omega_band"]); om_kind = "shear"
+    else:
+        edges = np.arange(nb + 1) * bw
+        om = -(1.0 / bw) * (np.sin(2 * np.pi * edges[1:] / L) - np.sin(2 * np.pi * edges[:-1] / L)) * 2 * np.pi / L
+        om_kind = "reference profile of a u0=1 shear (no drive applied)"
+    out = dict(run_id=c["run_id"], tau_c=tau_c, omega_kind=om_kind, T=c["T"], alpha=c["alpha"], beta=c["beta"],
+               drive=c["drive"], u0=c["u0"], L=L, R=c["R"], t_run=c["t_run"], dts=c["dts"], dt=c["dt"],
+               D=c["D"], B=c["B"], ueff_factor=(c["beta"] - c["alpha"]) / c["alpha"],
+               N={k: int(v.sum()) for k, v in cnt.items()})
+    lf = np.array([x[0] for x in lifes]) if lifes else np.zeros(0)
+    out["fav_objects"] = len(lf)
+    out["frac_objects_surviving_tau"] = float((lf >= tau_c).mean()) if len(lf) else np.nan
+    for kind in ("nuc", "col", "anti_nuc"):
+        N, Ex = cnt[kind], E[kind]
+        Nb, Eb = N.sum((0, 1)), Ex.sum((0, 1))
+        if N.sum() < 3 or Eb.sum() <= 0:
+            out[kind] = dict(rate=float(N.sum() / Eb.sum()) if Eb.sum() > 0 else np.nan, N_band=Nb.tolist())
+            continue
+        w = wls_fit(Nb, Eb, om); g = glm_fit(Nb, Eb, om); h = halves(Nb, Eb, om)
+        _, s_jk = jackknife(_glm_s, N, Ex, om)
+        _, r_jk = jackknife(_lnR, N, Ex, om)
+        with np.errstate(divide="ignore", invalid="ignore"):
+            lr = np.log(Nb / Eb)
+        out[kind] = dict(rate=float(Nb.sum() / Eb.sum()), s_wls=w["s"], ds_wls=w["ds"], chi2dof=w["chi2dof"],
+                         s_glm=g["s"], ds_glm=g["ds"], ds_jk=s_jk, lnR=h["lnR"], dlnR=h["dlnR"], dlnR_jk=r_jk,
+                         Np=h["Np"], Nn=h["Nn"], lnrate_band=[None if not np.isfinite(x) else float(x) for x in lr],
+                         N_band=Nb.tolist(), E_band=Eb.tolist())
+    # transport: drift velocity and density profile of tracked favoured skyrmions
+    ddt = np.array(s["drift_dt"])
+    with np.errstate(invalid="ignore", divide="ignore"):
+        out["drift_vx_band"] = (np.array(s["drift_dx"]) / ddt).tolist()
+        out["drift_vy_band"] = (np.array(s["drift_dy"]) / ddt).tolist()
+    out["sk_density_band"] = (np.array(s["sk_time"]) / s["t_meas"] / c["R"] / (bw * L)).tolist()
+    out["omega_band"] = om.tolist()
+    out["mean_sk_per_replica"] = float(np.sum(s["sk_time"]) / s["t_meas"] / c["R"])
+    out["raw_jump_events"] = {k: int(np.sum(v)) for k, v in s["counts"].items()}
+    out["raw_flagged"] = {k: int(np.sum(v)) for k, v in s["flagged"].items()}
+    tot = sum(out["raw_jump_events"].values())
+    out["raw_flag_fraction"] = sum(out["raw_flagged"].values()) / tot if tot else np.nan
+    out["dQ_mismatch_per_jump"] = s["dQ_mismatch"] / max(s["jump_total"], 1)
+    return out
+
+
+def fmt(o):
+    n, cl = o["nuc"], o["col"]
+    line = (f"{o['run_id']:26s} T={o['T']:.2f} u0={o['u0']:+.3f} a={o['alpha']} b={o['beta']} tau={o['tau_c']:g} "
+            f"Nnuc={o['N']['nuc']:5d} Ncol={o['N']['col']:5d} Nanti={o['N']['anti_nuc']:4d} "
+            f"G0={n['rate']:.3e} nu={cl['rate']:.4f} nsk/rep={o['mean_sk_per_replica']:.2f} "
+            f"flag={o['raw_flag_fraction']:.3f} mism={o['dQ_mismatch_per_jump']:.3f}")
+    if "s_glm" in n:
+        line += (f"\n    s_nuc={n['s_wls']:+.2f}±{n['ds_wls']:.2f}(P)±{n['ds_jk']:.2f}(JK)  lnR_nuc={n['lnR']:+.3f}"
+                 f"±{n['dlnR']:.3f}(P)±{n['dlnR_jk']:.3f}(JK)")
+    if "s_glm" in cl:
+        line += (f"\n    s_col={cl['s_wls']:+.2f}±{cl['ds_wls']:.2f}(P)±{cl['ds_jk']:.2f}(JK)  lnR_col={cl['lnR']:+.3f}"
+                 f"±{cl['dlnR']:.3f}(P)±{cl['dlnR_jk']:.3f}(JK)")
+    return line
