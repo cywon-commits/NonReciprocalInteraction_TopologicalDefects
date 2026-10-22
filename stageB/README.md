@@ -2,7 +2,8 @@
 
 Code and data for the calculation request [`../docs/compute_request_stageB.md`](../docs/compute_request_stageB.md)
 "비상반 구동 아래 스커미온 핵생성 편향 (분기 논문 A, 단계 B)".
-The report is [`REPORT.md`](REPORT.md); figures are in `results/figures/`.
+Reports: [`REPORT.md`](REPORT.md) (stage B, sections 1-7 of the request) and [`REPORT_B2.md`](REPORT_B2.md)
+(stage B', section 8: P10-P15); figures are in `results/figures/`.
 All commands below are run from this `stageB/` directory.
 
 ## Model and conventions (as in the request, unchanged)
@@ -45,6 +46,9 @@ python3 scripts/make_configs.py
 scripts/run_batch.py -j 4 configs/main/P1.json configs/main/P2.json ...   # any configs, N at a time
 scripts/run_batch.py -j 4 configs/ladder/*.json
 python3 -m skynuc.nucleation configs/main/P1.json --resume                 # resume from state.npz
+
+# stage B' (P10-P15): python3 scripts/make_configs_b2.py prints the config list
+scripts/run_batch.py -j 4 $(python3 scripts/make_configs_b2.py)
 
 # analysis and figures
 python3 scripts/collect.py                # -> results/summary_table.csv, results/analysis/*.json
