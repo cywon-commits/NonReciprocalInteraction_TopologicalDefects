@@ -1,6 +1,0 @@
-start configs/conv/T0.45_dts0.02.json
-start configs/conv/T0.45_dts0.06.json
-start configs/conv/T0.45_dts0.12.json
-start configs/conv/T0.50_dts0.06.json
-done configs/conv/T0.45_dts0.12.json rc 0 944s
-done configs/conv/T0.45_dts0.06.json rc 0 1460s
