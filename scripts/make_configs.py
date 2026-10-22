@@ -29,3 +29,11 @@ for T, trun in [(0.40, 6000.0), (0.45, 6000.0), (0.55, 3000.0), (0.60, 2000.0)]:
     cfg = dict(base, out_dir="results/ladder", run_id=f"ladder_T{T:.2f}", seed=int(T * 10000), T=T, t_run=trun,
                alpha=0.1, beta=0.0, drive="none", u0=0.0)
     json.dump(cfg, open(os.path.join(ROOT, f"configs/ladder/T{T:.2f}.json"), "w"), indent=1)
+# second, independent seeds of the decisive points, and a u0 = 2*U0 set (linearity, precision)
+for name in ("P1", "P2", "P4", "P5", "P7"):
+    cfg = dict(base, run_id=name + "b", seed=2000 + int(name[1]), **points[name])
+    json.dump(cfg, open(os.path.join(ROOT, f"configs/main/{name}b.json"), "w"), indent=1)
+for name in ("P1", "P4", "P5"):
+    p = dict(points[name], u0=2 * U0)
+    cfg = dict(base, run_id=name + "_u2x", seed=3000 + int(name[1]), **p)
+    json.dump(cfg, open(os.path.join(ROOT, f"configs/main/{name}_u2x.json"), "w"), indent=1)

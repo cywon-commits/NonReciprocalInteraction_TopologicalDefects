@@ -323,8 +323,30 @@ def object_counts(run_dir, tau_c=5.0):
     return s, cnt, E, lifes
 
 
+def object_counts_multi(run_dirs, tau_c):
+    """Pool independent runs (same parameters, different seeds) by stacking their replica axes."""
+    parts = [object_counts(d, tau_c) for d in run_dirs]
+    s = parts[0][0]
+    cnt = {k: np.concatenate([p[1][k] for p in parts], axis=0) for k in parts[0][1]}
+    E = {k: np.concatenate([p[2][k] for p in parts], axis=0) for k in parts[0][2]}
+    lifes = [x for p in parts for x in p[3]]
+    if len(parts) > 1:
+        s = dict(s)
+        for key in ("drift_dx", "drift_dy", "drift_dt", "sk_time"):
+            s[key] = np.sum([np.array(p[0][key]) for p in parts], axis=0).tolist()
+        s["t_meas"] = parts[0][0]["t_meas"]
+        s["config"] = dict(s["config"], R=sum(p[0]["config"]["R"] for p in parts),
+                           run_id="+".join(p[0]["config"]["run_id"] for p in parts))
+        for key in ("counts", "flagged"):
+            s[key] = {k: np.sum([np.array(p[0][key][k]) for p in parts], axis=0).tolist() for k in s[key]}
+        s["dQ_mismatch"] = sum(p[0]["dQ_mismatch"] for p in parts)
+        s["jump_total"] = sum(p[0]["jump_total"] for p in parts)
+    return s, cnt, E, lifes
+
+
 def analyse_objects(run_dir, tau_c=5.0):
-    s, cnt, E, lifes = object_counts(run_dir, tau_c)
+    dirs = run_dir if isinstance(run_dir, (list, tuple)) else [run_dir]
+    s, cnt, E, lifes = object_counts_multi(dirs, tau_c)
     c = s["config"]; nb = c["nbands"]; L = c["L"]; bw = L // nb
     if c["drive"] == "shear":
         om = np.array(s["omega_band"]); om_kind = "shear"
@@ -362,6 +384,7 @@ def analyse_objects(run_dir, tau_c=5.0):
     out["sk_density_band"] = (np.array(s["sk_time"]) / s["t_meas"] / c["R"] / (bw * L)).tolist()
     out["omega_band"] = om.tolist()
     out["mean_sk_per_replica"] = float(np.sum(s["sk_time"]) / s["t_meas"] / c["R"])
+    out["runs"] = dirs
     out["raw_jump_events"] = {k: int(np.sum(v)) for k, v in s["counts"].items()}
     out["raw_flagged"] = {k: int(np.sum(v)) for k, v in s["flagged"].items()}
     tot = sum(out["raw_jump_events"].values())

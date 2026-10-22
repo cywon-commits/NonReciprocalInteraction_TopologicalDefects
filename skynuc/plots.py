@@ -97,3 +97,59 @@ def fig_points(dirs, tau_c=10.0, out="points.png", ncol=3):
     for ax in axs.ravel()[n:]:
         ax.axis("off")
     fig.tight_layout(); fig.savefig(f"{FIG}/{out}"); plt.close(fig)
+
+
+def _table():
+    import csv as _c
+    return [r for r in _c.DictReader(open("results/summary_table.csv"))]
+
+
+def fig_summary(tau_c="10"):
+    rows = [r for r in _table() if r["tau_c"] == tau_c and r["run"].startswith("P")]
+    fig, ax = plt.subplots(1, 2, figsize=(10, 3.8))
+    for r in rows:
+        if r["run"] in ("P7",):
+            continue
+        x = float(r["ueff_u0"]); y = float(r["nuc_s_glm"]); e = float(r["nuc_ds_jk"])
+        uni = r["drive"] == "uniform"
+        col = C[1] if float(r["alpha"]) == 0.3 else C[0]
+        if uni:
+            col = C[3]
+        ax[0].errorbar(x, y, yerr=e, fmt="s" if uni else "o", ms=7, color=col, elinewidth=1.2)
+        ax[0].annotate(r["run"], (x, y), textcoords="offset points", xytext=(6, 4), fontsize=8, color=INK2)
+        yc = float(r["col_s_glm"]); ec = float(r["col_ds_jk"])
+        ax[1].errorbar(y, yc, xerr=e, yerr=ec, fmt="s" if uni else "o", ms=7, color=col, elinewidth=1.2)
+        ax[1].annotate(r["run"], (y, yc), textcoords="offset points", xytext=(6, 4), fontsize=8, color=INK2)
+    ax[0].axhline(0, color=INK2, lw=0.8); ax[0].axvline(0, color=INK2, lw=0.8)
+    ax[0].set_xlabel("(β − α) u₀ / α   (u_eff amplitude)")
+    ax[0].set_ylabel(f"s_nuc = d ln Γ_nuc / dω   (τ_c = {tau_c})")
+    ax[0].set_title("Nucleation slope vs effective drive (blue α=0.1, orange α=0.3, yellow ω=0)", fontsize=8)
+    lim = max(abs(np.array(ax[1].get_xlim())).max(), abs(np.array(ax[1].get_ylim())).max())
+    xx = np.linspace(-lim, lim, 2)
+    ax[1].plot(xx, -xx, ls="--", color=INK2, lw=1, label="s_col = −s_nuc (local detailed balance)")
+    ax[1].axhline(0, color=GRID, lw=0.8); ax[1].axvline(0, color=GRID, lw=0.8)
+    ax[1].set_xlabel("s_nuc"); ax[1].set_ylabel("s_col = d ln ν / dω")
+    ax[1].legend(fontsize=7); ax[1].set_title("Collapse vs nucleation slope", fontsize=9)
+    fig.tight_layout(); fig.savefig(f"{FIG}/summary.png"); plt.close(fig)
+
+
+def fig_ladder(tau_c="10"):
+    rows = [r for r in _table() if r["tau_c"] == tau_c and float(r["u0"]) == 0 and r["drive"] == "none"
+            and float(r["alpha"]) == 0.1 and float(r["dt"]) == 0.02]
+    T = np.array([float(r["T"]) for r in rows]); G = np.array([float(r["Gamma0"]) for r in rows])
+    nu = np.array([float(r["nu"]) for r in rows]); N = np.array([float(r["N_nuc"]) for r in rows])
+    o = np.argsort(T); T, G, nu, N = T[o], G[o], nu[o], N[o]
+    p = np.polyfit(1 / T, np.log(G), 1, w=np.sqrt(N))
+    pn = np.polyfit(1 / T, np.log(nu), 1)
+    fig, ax = plt.subplots(1, 2, figsize=(9, 3.4))
+    ax[0].errorbar(1 / T, np.log(G), yerr=1 / np.sqrt(N), fmt="o", color=C[0], ms=7)
+    xx = np.linspace((1 / T).min(), (1 / T).max(), 2)
+    ax[0].plot(xx, np.polyval(p, xx), color=C[0], lw=1.2, label=f"ΔE_b = {-p[0]:.2f} J")
+    ax[0].set_xlabel("1/T"); ax[0].set_ylabel("ln Γ₀  (per site per unit time)"); ax[0].legend()
+    ax[0].set_title(f"Undriven nucleation rate (τ_c = {tau_c})", fontsize=9)
+    ax[1].plot(1 / T, np.log(nu), "o", color=C[1], ms=7)
+    ax[1].plot(xx, np.polyval(pn, xx), color=C[1], lw=1.2, label=f"ΔE_col = {-pn[0]:.2f} J")
+    ax[1].set_xlabel("1/T"); ax[1].set_ylabel("ln ν  (per skyrmion per unit time)"); ax[1].legend()
+    ax[1].set_title("Collapse rate of established skyrmions", fontsize=9)
+    fig.tight_layout(); fig.savefig(f"{FIG}/ladder.png"); plt.close(fig)
+    return dict(dE_b=-p[0], dE_col=-pn[0], T=T.tolist(), Gamma0=G.tolist(), nu=nu.tolist(), N=N.tolist())
