@@ -7,3 +7,4 @@ results/main/*/
 results/dep/*/
 results/ladder/*/
 results/dep/
+results/*_batch*.log
