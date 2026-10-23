@@ -4,7 +4,8 @@ Code and data for the calculation request [`../docs/compute_request_stageB.md`](
 "비상반 구동 아래 스커미온 핵생성 편향 (분기 논문 A, 단계 B)".
 Reports: [`REPORT.md`](REPORT.md) (stage B, sections 1-7 of the request) and [`REPORT_B2.md`](REPORT_B2.md)
 (stage B', section 8: P10-P15) and [`REPORT_B3.md`](REPORT_B3.md) (stage B'', section 9: P16-P20) and [`REPORT_B4.md`](REPORT_B4.md)
-(stage B''', section 10: re-analysis, `scripts/b4_analysis.py`);
+(stage B''', section 10: re-analysis, `scripts/b4_analysis.py`) and [`REPORT_C.md`](REPORT_C.md)
+(stage C, section 11: F_pop(T); configs `scripts/make_configs_c.py`, analysis `scripts/c_analysis.py`);
 figures are in `results/figures/`.
 All commands below are run from this `stageB/` directory.
 

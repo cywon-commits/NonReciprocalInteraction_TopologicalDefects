@@ -280,3 +280,30 @@ def fig_b4():
     ax[1].set_xlabel("predicted (equivalent field)"); ax[1].set_ylabel("measured"); ax[1].legend(fontsize=6, ncol=2)
     ax[1].set_title("τ_c = 10: population, saddle and nucleation slopes", fontsize=9)
     fig.tight_layout(); fig.savefig(f"{FIG}/b4_summary.png"); plt.close(fig)
+
+
+def fig_c():
+    """Stage C: F_pop(T) (tau_c = 5, 10, 20) and thermal magnetisation deficit dM_T = T d ln n0/dB."""
+    o = json.load(open("results/c_summary.json"))
+    fig, ax = plt.subplots(1, 2, figsize=(10.5, 3.7))
+    for i, (t, col) in enumerate((("tau5", C[2]), ("tau10", C[0]), ("tau20", C[1]))):
+        pts = sorted((v["T"], *v["F_pop"]) for k, v in o[t].items() if k.startswith("T") and "F_pop" in v)
+        T = np.array([p[0] for p in pts]) + 0.004 * (i - 1)
+        ax[0].errorbar(T, [p[1] for p in pts], yerr=[p[2] for p in pts], fmt="o-", color=col, ms=7,
+                       label=f"τ_c = {t[3:]}")
+        if t == "tau10":
+            m, e = o["summary_045_060"][t]["mean_045_060"]
+            ax[0].axhspan(m - e, m + e, xmax=0.62, color=col, alpha=0.12, lw=0)
+    ax[0].axhline(1, color=INK2, ls="--", lw=1); ax[0].set_ylim(-0.6, 1.6)
+    ax[0].axvspan(0.65, 0.73, color=GRID, alpha=0.6, lw=0)
+    ax[0].text(0.655, 1.45, "dense, lifetime < τ_c", fontsize=7, color=INK2)
+    ax[0].set_xlabel("T"); ax[0].set_ylabel("F_pop = measured / predicted"); ax[0].legend(fontsize=7, loc="lower left")
+    ax[0].set_title("Stage C: F_pop(T), rotation drive (antisymmetric)", fontsize=9)
+    for t, col in (("tau10", C[0]),):
+        pts = sorted((v["T"], *v["dM_T"]) for k, v in o[t].items() if k.startswith("T") and "dM_T" in v)
+        ax[1].errorbar([p[0] for p in pts], [p[1] for p in pts], yerr=[p[2] for p in pts], fmt="o-", color=col, ms=7,
+                       label="ΔM_T = T ∂ln n₀/∂B (τ_c = 10)")
+    ax[1].axhline(-67.7, color=INK2, ls="--", lw=1, label="T = 0 relaxed ΔM₀ = −67.7")
+    ax[1].set_xlabel("T"); ax[1].set_ylabel("ΔM"); ax[1].legend(fontsize=7)
+    ax[1].set_title("Thermal magnetisation deficit", fontsize=9)
+    fig.tight_layout(); fig.savefig(f"{FIG}/c_summary.png"); plt.close(fig)
