@@ -1,0 +1,4 @@
+u_eff=0.0710 A_end=5.410e-04 A_mean_lastQ=4.118e-04 A_max=5.410e-04 Vx=0.1420 Vy=0.0000 Q=3.000 My=0.7494 wall=54
+u_eff=0.0725 A_end=3.300e+15 A_mean_lastQ=4.826e+15 A_max=3.289e+17 Vx=0.1450 Vy=0.0000 Q=2.000 My=0.5745 wall=55
+u_eff=0.0750 A_end=6.811e+15 A_mean_lastQ=4.357e+15 A_max=1.224e+17 Vx=0.1500 Vy=0.0000 Q=2.000 My=0.5943 wall=56
+u_eff=0.0775 A_end=1.856e+15 A_mean_lastQ=4.877e+15 A_max=2.022e+17 Vx=0.1550 Vy=0.0000 Q=2.000 My=0.6141 wall=55

@@ -1,0 +1,13 @@
+u_eff=0.0800 A_end=6.396e-13 A_mean_lastQ=1.499e-11 A_max=1.208e-04 Vx=0.0927 Vy=0.0295 Q=-7.664 My=0.0106 wall=40
+u_eff=0.0900 A_end=5.120e-12 A_mean_lastQ=1.956e-11 A_max=1.004e-07 Vx=0.1043 Vy=0.0332 Q=-7.663 My=0.0119 wall=79
+u_eff=0.1000 A_end=5.391e-08 A_mean_lastQ=5.033e-08 A_max=1.277e-07 Vx=0.1158 Vy=0.0369 Q=-7.663 My=0.0132 wall=118
+u_eff=0.1100 A_end=1.930e-03 A_mean_lastQ=7.080e-04 A_max=1.930e-03 Vx=0.1274 Vy=0.0406 Q=-7.663 My=0.0146 wall=157
+u_eff=0.1200 A_end=3.843e+00 A_mean_lastQ=2.010e+00 A_max=4.834e+00 Vx=0.1403 Vy=0.0431 Q=-7.616 My=0.0155 wall=196
+u_eff=0.1300 A_end=1.320e+01 A_mean_lastQ=4.992e+01 A_max=3.796e+02 Vx=0.1503 Vy=0.0401 Q=-7.648 My=0.0149 wall=236
+u_eff=0.1400 A_end=7.352e+00 A_mean_lastQ=1.227e+01 A_max=7.431e+01 Vx=0.1620 Vy=0.0433 Q=-7.646 My=0.0161 wall=275
+u_eff=0.1500 A_end=4.063e+00 A_mean_lastQ=2.069e+00 A_max=3.302e+02 Vx=0.1742 Vy=0.0528 Q=-7.607 My=0.0190 wall=313
+u_eff=0.1600 A_end=5.883e-01 A_mean_lastQ=2.051e+00 A_max=5.270e+00 Vx=0.1858 Vy=0.0566 Q=-7.654 My=0.0202 wall=353
+u_eff=0.1700 A_end=2.165e+00 A_mean_lastQ=2.056e+00 A_max=5.148e+00 Vx=0.1970 Vy=0.0602 Q=-7.627 My=0.0216 wall=394
+u_eff=0.1800 A_end=3.034e+00 A_mean_lastQ=2.003e+00 A_max=5.542e+00 Vx=0.2087 Vy=0.0633 Q=-7.585 My=0.0226 wall=433
+u_eff=0.1900 A_end=9.696e-01 A_mean_lastQ=1.932e+00 A_max=1.508e+02 Vx=0.2194 Vy=0.0674 Q=-7.644 My=0.0243 wall=473
+u_eff=0.2000 A_end=3.215e+00 A_mean_lastQ=2.537e+00 A_max=3.979e+01 Vx=0.2309 Vy=0.0688 Q=-7.587 My=0.0246 wall=512

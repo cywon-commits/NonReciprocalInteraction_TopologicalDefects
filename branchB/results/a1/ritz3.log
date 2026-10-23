@@ -1,0 +1,8 @@
+19_0.3: exact=0.879 | displacement only P=1,2: 1.128 1.189 | + conjugate canting P=0,1,2: 0.980 1.004 0.880
+19_0.5: exact=0.468 | displacement only P=1,2: 0.875 0.815 | + conjugate canting P=0,1,2: 0.979 0.610 0.468
+19_0.85: exact=0.055 | displacement only P=1,2: 0.260 0.174 | + conjugate canting P=0,1,2: 0.965 0.128 0.058
+13_0.5: exact=0.136 | displacement only P=1,2: 0.634 0.545 | + conjugate canting P=0,1,2: 0.957 0.231 0.135
+15_0.5: exact=0.242 | displacement only P=1,2: 0.717 0.631 | + conjugate canting P=0,1,2: 0.967 0.354 0.241
+23_0.5: exact=0.803 | displacement only P=1,2: 1.047 1.115 | + conjugate canting P=0,1,2: 0.984 0.926 0.805
+23_0.7: exact=0.100 | displacement only P=1,2: 0.330 0.241 | + conjugate canting P=0,1,2: 0.977 0.186 0.104
+27_0.6: exact=0.204 | displacement only P=1,2: 0.428 0.394 | + conjugate canting P=0,1,2: 0.984 0.265 0.215

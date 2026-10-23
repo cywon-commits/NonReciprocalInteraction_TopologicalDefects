@@ -1,0 +1,8 @@
+u=0.03 T=0.17 init=cry: second-half Psi6=0.507 f_def=0.164 N=64.1 wall=525s
+u=0.03 T=0.17 init=liq: second-half Psi6=0.394 f_def=0.248 N=64.1 wall=426s
+u=0.03 T=0.19 init=cry: second-half Psi6=0.502 f_def=0.178 N=64.1 wall=264s
+u=0.03 T=0.19 init=liq: second-half Psi6=0.173 f_def=0.346 N=64.2 wall=269s
+u=0.03 T=0.21 init=cry: second-half Psi6=0.340 f_def=0.298 N=64.2 wall=267s
+u=0.03 T=0.21 init=liq: second-half Psi6=0.174 f_def=0.356 N=64.2 wall=280s
+u=0.03 T=0.23 init=cry: second-half Psi6=0.448 f_def=0.215 N=64.3 wall=259s
+u=0.03 T=0.23 init=liq: second-half Psi6=0.155 f_def=0.390 N=64.4 wall=266s

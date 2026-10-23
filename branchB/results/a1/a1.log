@@ -1,0 +1,5 @@
+a=19 B=0.5: kappa_tau dynamic=0.446 | static-relaxed mode=0.453 | affine mode=0.958 || c2 dyn=0.616 rel=0.616 | r_L=0.543 r_T=0.173 |u_x/u_y|=0.55
+a=13 B=0.5: kappa_tau dynamic=0.101 | static-relaxed mode=0.105 | affine mode=0.914 || c2 dyn=0.486 rel=0.486 | r_L=0.345 r_T=0.111 |u_x/u_y|=0.56
+a=19 B=0.3: kappa_tau dynamic=0.857 | static-relaxed mode=0.862 | affine mode=0.961 || c2 dyn=0.723 rel=0.723 | r_L=0.582 r_T=0.181 |u_x/u_y|=0.55
+a=19 B=0.85: kappa_tau dynamic=0.043 | static-relaxed mode=0.047 | affine mode=0.931 || c2 dyn=0.191 rel=0.191 | r_L=0.159 r_T=0.039 |u_x/u_y|=0.49
+a=23 B=0.6: kappa_tau dynamic=0.274 | static-relaxed mode=0.284 | affine mode=0.963 || c2 dyn=0.366 rel=0.366 | r_L=0.383 r_T=0.102 |u_x/u_y|=0.51

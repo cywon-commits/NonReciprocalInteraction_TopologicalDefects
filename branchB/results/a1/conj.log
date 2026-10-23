@@ -1,0 +1,5 @@
+19_0.3: kappa=0.879 | corrector captured by  displacement-type V / conjugate OmegaV / both:  L [np.float64(0.84), np.float64(0.63), np.float64(1.0)]  T [np.float64(0.9), np.float64(0.82), np.float64(1.0)]
+19_0.5: kappa=0.468 | corrector captured by  displacement-type V / conjugate OmegaV / both:  L [np.float64(0.93), np.float64(0.62), np.float64(1.0)]  T [np.float64(0.94), np.float64(0.76), np.float64(1.0)]
+19_0.85: kappa=0.055 | corrector captured by  displacement-type V / conjugate OmegaV / both:  L [np.float64(0.93), np.float64(0.88), np.float64(1.0)]  T [np.float64(0.96), np.float64(0.9), np.float64(1.0)]
+13_0.5: kappa=0.136 | corrector captured by  displacement-type V / conjugate OmegaV / both:  L [np.float64(0.92), np.float64(0.67), np.float64(1.0)]  T [np.float64(0.92), np.float64(0.76), np.float64(1.0)]
+23_0.5: kappa=0.803 | corrector captured by  displacement-type V / conjugate OmegaV / both:  L [np.float64(0.95), np.float64(0.66), np.float64(1.0)]  T [np.float64(0.95), np.float64(0.78), np.float64(1.0)]

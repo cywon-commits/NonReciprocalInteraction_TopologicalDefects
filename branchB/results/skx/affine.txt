@@ -1,0 +1,29 @@
+a= 13 B=  0.3: c2_true=0.5741 c2_aff=2.5825 ratio=0.222 | kappa_tau=0.139 kappa_P=0.271 | Re(lam_aff)=1.7e-11
+a= 13 B=  0.4: c2_true=0.5331 c2_aff=2.5126 ratio=0.212 | kappa_tau=0.122 kappa_P=0.252 | Re(lam_aff)=5.0e-12
+a= 13 B=  0.5: c2_true=0.4860 c2_aff=2.4830 ratio=0.196 | kappa_tau=0.102 kappa_P=0.228 | Re(lam_aff)=1.5e-11
+a= 13 B=  0.6: c2_true=0.4340 c2_aff=2.4992 ratio=0.174 | kappa_tau=0.080 kappa_P=0.202 | Re(lam_aff)=4.7e-12
+a= 13 B=  0.7: c2_true=0.3791 c2_aff=2.5746 ratio=0.147 | kappa_tau=0.059 kappa_P=0.173 | Re(lam_aff)=9.6e-13
+a= 13 B= 0.85: c2_true=0.2959 c2_aff=2.8599 ratio=0.103 | kappa_tau=0.032 kappa_P=0.131 | Re(lam_aff)=5.8e-12
+a= 15 B=  0.3: c2_true=0.7030 c2_aff=2.4473 ratio=0.287 | kappa_tau=0.325 kappa_P=0.413 | Re(lam_aff)=1.1e-11
+a= 15 B=  0.4: c2_true=0.6476 c2_aff=2.3500 ratio=0.276 | kappa_tau=0.271 kappa_P=0.374 | Re(lam_aff)=5.3e-12
+a= 15 B=  0.5: c2_true=0.5795 c2_aff=2.2955 ratio=0.252 | kappa_tau=0.214 kappa_P=0.327 | Re(lam_aff)=3.3e-12
+a= 15 B=  0.6: c2_true=0.5022 c2_aff=2.2887 ratio=0.219 | kappa_tau=0.159 kappa_P=0.275 | Re(lam_aff)=9.1e-12
+a= 15 B=  0.7: c2_true=0.4197 c2_aff=2.3432 ratio=0.179 | kappa_tau=0.111 kappa_P=0.223 | Re(lam_aff)=1.1e-11
+a= 15 B= 0.85: c2_true=0.3000 c2_aff=2.6055 ratio=0.115 | kappa_tau=0.055 kappa_P=0.151 | Re(lam_aff)=2.2e-11
+a= 19 B=  0.3: c2_true=0.7229 c2_aff=2.2292 ratio=0.324 | kappa_tau=0.857 kappa_P=0.773 | Re(lam_aff)=3.3e-12
+a= 19 B=  0.4: c2_true=0.6974 c2_aff=2.0920 ratio=0.333 | kappa_tau=0.661 kappa_P=0.657 | Re(lam_aff)=2.7e-12
+a= 19 B=  0.5: c2_true=0.6157 c2_aff=2.0098 ratio=0.306 | kappa_tau=0.446 kappa_P=0.505 | Re(lam_aff)=1.3e-11
+a= 19 B=  0.6: c2_true=0.4909 c2_aff=1.9929 ratio=0.246 | kappa_tau=0.264 kappa_P=0.351 | Re(lam_aff)=2.7e-12
+a= 19 B=  0.7: c2_true=0.3555 c2_aff=2.0649 ratio=0.172 | kappa_tau=0.138 kappa_P=0.226 | Re(lam_aff)=1.6e-12
+a= 19 B= 0.85: c2_true=0.1907 c2_aff=2.4353 ratio=0.078 | kappa_tau=0.043 kappa_P=0.107 | Re(lam_aff)=1.7e-11
+a= 23 B=  0.4: c2_true=0.2048 c2_aff=1.9343 ratio=0.106 | kappa_tau=1.690 kappa_P=1.440 | Re(lam_aff)=2.5e-12
+a= 23 B=  0.5: c2_true=0.4940 c2_aff=1.8423 ratio=0.268 | kappa_tau=0.780 kappa_P=0.769 | Re(lam_aff)=5.3e-12
+a= 23 B=  0.6: c2_true=0.3657 c2_aff=1.8546 ratio=0.197 | kappa_tau=0.274 kappa_P=0.339 | Re(lam_aff)=1.1e-11
+a= 23 B=  0.7: c2_true=0.2110 c2_aff=2.0070 ratio=0.105 | kappa_tau=0.088 kappa_P=0.148 | Re(lam_aff)=1.7e-11
+a= 23 B= 0.85: c2_true=0.0799 c2_aff=2.6233 ratio=0.030 | kappa_tau=0.014 kappa_P=0.047 | Re(lam_aff)=2.1e-12
+a= 27 B=  0.3: c2_true=0.0522 c2_aff=4.7633 ratio=0.011 | kappa_tau=0.775 kappa_P=0.790 | Re(lam_aff)=9.4e-12
+Traceback (most recent call last):
+  File "/home/claude/skx/affine.py", line 28, in <module>
+    kt=float(re.search(r"kappa_tau=([\d.]+)",l).group(1)); kp=float(re.search(r"kappa_P=([\d.]+)",l).group(1))
+                                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'group'

@@ -1,0 +1,8 @@
+skyrmions: 32
+t=50000 wall=541s
+t=100000 wall=1048s
+t=150000 wall=1499s
+t=200000 wall=1794s
+t=250000 wall=2078s
+t=300000 wall=2360s
+done 2359.907156229019

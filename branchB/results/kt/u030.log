@@ -1,0 +1,13 @@
+t=5000 wall=60s P6=0.17 fdef=0.38
+t=10000 wall=115s P6=0.09 fdef=0.41
+t=15000 wall=159s P6=0.26 fdef=0.39
+t=20000 wall=189s P6=0.10 fdef=0.39
+t=25000 wall=220s P6=0.10 fdef=0.42
+t=30000 wall=252s P6=0.19 fdef=0.35
+t=35000 wall=305s P6=0.02 fdef=0.47
+t=40000 wall=366s P6=0.12 fdef=0.39
+t=45000 wall=425s P6=0.07 fdef=0.42
+t=50000 wall=488s P6=0.14 fdef=0.39
+t=55000 wall=549s P6=0.15 fdef=0.35
+t=60000 wall=612s P6=0.12 fdef=0.40
+done

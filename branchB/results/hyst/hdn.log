@@ -1,0 +1,16 @@
+u_eff=0.0975 A_end=8.196e+09 A_mean_lastQ=3.923e+09 A_max=8.196e+09 Vx=0.1950 Vy=0.0000 Q=2.000 My=0.7726 wall=6
+u_eff=0.0950 A_end=2.891e+10 A_mean_lastQ=1.221e+10 A_max=2.891e+10 Vx=0.1900 Vy=0.0000 Q=2.000 My=0.7528 wall=11
+u_eff=0.0925 A_end=3.465e+11 A_mean_lastQ=1.301e+11 A_max=3.465e+11 Vx=0.1850 Vy=0.0000 Q=2.000 My=0.7329 wall=16
+u_eff=0.0900 A_end=8.596e+11 A_mean_lastQ=2.906e+11 A_max=8.596e+11 Vx=0.1800 Vy=0.0000 Q=2.000 My=0.7131 wall=21
+u_eff=0.0875 A_end=6.105e+12 A_mean_lastQ=1.669e+12 A_max=6.105e+12 Vx=0.1750 Vy=0.0000 Q=2.000 My=0.6933 wall=27
+u_eff=0.0850 A_end=6.261e+13 A_mean_lastQ=1.031e+13 A_max=6.261e+13 Vx=0.1700 Vy=0.0000 Q=2.000 My=0.6735 wall=32
+u_eff=0.0825 A_end=3.831e+15 A_mean_lastQ=3.585e+14 A_max=3.831e+15 Vx=0.1650 Vy=0.0000 Q=2.000 My=0.6537 wall=37
+u_eff=0.0800 A_end=4.228e+15 A_mean_lastQ=6.357e+14 A_max=5.422e+15 Vx=0.1600 Vy=0.0000 Q=2.000 My=0.6339 wall=43
+u_eff=0.0775 A_end=1.250e+15 A_mean_lastQ=1.368e+15 A_max=1.633e+16 Vx=0.1550 Vy=0.0000 Q=2.000 My=0.6141 wall=48
+u_eff=0.0750 A_end=2.934e+15 A_mean_lastQ=1.091e+15 A_max=6.844e+15 Vx=0.1500 Vy=0.0000 Q=2.000 My=0.5943 wall=53
+u_eff=0.0725 A_end=2.241e+15 A_mean_lastQ=2.381e+15 A_max=2.474e+16 Vx=0.1450 Vy=0.0000 Q=2.000 My=0.5745 wall=58
+u_eff=0.0700 A_end=3.007e+15 A_mean_lastQ=5.935e+15 A_max=5.407e+16 Vx=0.1400 Vy=0.0000 Q=2.000 My=0.5547 wall=64
+u_eff=0.0675 A_end=3.548e+15 A_mean_lastQ=4.839e+15 A_max=9.960e+16 Vx=0.1350 Vy=0.0000 Q=2.000 My=0.5349 wall=69
+u_eff=0.0650 A_end=6.808e+15 A_mean_lastQ=5.423e+15 A_max=6.129e+16 Vx=0.1300 Vy=0.0000 Q=2.000 My=0.5150 wall=74
+u_eff=0.0625 A_end=8.814e+15 A_mean_lastQ=5.287e+15 A_max=2.996e+16 Vx=0.1250 Vy=0.0000 Q=2.000 My=0.4952 wall=79
+u_eff=0.0600 A_end=6.603e+15 A_mean_lastQ=7.758e+15 A_max=7.560e+16 Vx=0.1200 Vy=0.0000 Q=2.000 My=0.4754 wall=85

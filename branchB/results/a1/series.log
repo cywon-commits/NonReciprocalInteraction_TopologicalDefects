@@ -1,0 +1,6 @@
+19_0.3: exact=0.879 | full=0.880 | per-|G| blocks (u+c coupled)=1.016 | u,c blocks separate=1.636 | fully diagonal=1.437
+19_0.5: exact=0.468 | full=0.468 | per-|G| blocks (u+c coupled)=0.868 | u,c blocks separate=0.929 | fully diagonal=1.359
+19_0.85: exact=0.055 | full=0.058 | per-|G| blocks (u+c coupled)=0.103 | u,c blocks separate=0.487 | fully diagonal=0.039
+13_0.5: exact=0.136 | full=0.135 | per-|G| blocks (u+c coupled)=0.296 | u,c blocks separate=0.347 | fully diagonal=0.687
+23_0.5: exact=0.803 | full=0.805 | per-|G| blocks (u+c coupled)=1.236 | u,c blocks separate=1.542 | fully diagonal=1.718
+23_0.7: exact=0.100 | full=0.104 | per-|G| blocks (u+c coupled)=0.619 | u,c blocks separate=0.327 | fully diagonal=1.033

@@ -1,0 +1,8 @@
+phi= 90 k=0.01: u_eff*=0.0637   omega_u/(k sin phi)=0.0630   ratio=1.011
+phi= 90 k=0.04: u_eff*=0.0662   omega_u/(k sin phi)=0.0654   ratio=1.012
+phi= 90 k=0.16: u_eff*=0.0835   omega_u/(k sin phi)=0.0820   ratio=1.018
+phi= 60 k=0.01: u_eff*=0.0812   omega_u/(k sin phi)=0.0728   ratio=1.116
+phi= 60 k=0.04: u_eff*=0.0761   omega_u/(k sin phi)=0.0755   ratio=1.008
+phi= 60 k=0.16: u_eff*=0.0963   omega_u/(k sin phi)=0.0947   ratio=1.017
+phi= 30 k=0.01: u_eff*=0.3781   omega_u/(k sin phi)=0.1260   ratio=3.000
+phi= 30 k=0.04: u_eff*=0.1344   omega_u/(k sin phi)=0.1308   ratio=1.028

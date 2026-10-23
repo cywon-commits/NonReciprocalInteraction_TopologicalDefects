@@ -1,0 +1,8 @@
+a=19 B=0.3: exact=0.879 | envelope P=1,2,3 (n=[14, 44, 90]): [0.985, 0.896, 0.882] | P=2 + local channels: 1.229
+a=19 B=0.5: exact=0.468 | envelope P=1,2,3 (n=[14, 44, 90]): [0.806, 0.705, 0.687] | P=2 + local channels: 0.876
+a=19 B=0.85: exact=0.055 | envelope P=1,2,3 (n=[14, 44, 90]): [0.332, 0.237, 0.216] | P=2 + local channels: 0.237
+a=13 B=0.5: exact=0.136 | envelope P=1,2,3 (n=[14, 44, 90]): [0.79, 0.716, 0.701] | P=2 + local channels: 0.723
+a=15 B=0.5: exact=0.242 | envelope P=1,2,3 (n=[14, 44, 90]): [0.808, 0.726, 0.711] | P=2 + local channels: 0.784
+a=23 B=0.5: exact=0.803 | envelope P=1,2,3 (n=[14, 44, 90]): [0.741, 0.616, 0.592] | P=2 + local channels: 0.953
+a=23 B=0.7: exact=0.100 | envelope P=1,2,3 (n=[14, 44, 90]): [0.369, 0.252, 0.226] | P=2 + local channels: 0.286
+a=27 B=0.6: exact=0.204 | envelope P=1,2,3 (n=[14, 44, 90]): [0.386, 0.252, 0.22] | P=2 + local channels: 0.349
