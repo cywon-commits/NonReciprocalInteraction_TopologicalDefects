@@ -250,3 +250,33 @@ def fig_b3():
     ax[2].set_xticks(range(4), labs, fontsize=7); ax[2].set_ylabel("s_nuc")
     ax[2].set_title("P18: oddness in Ω (all statistics)", fontsize=9)
     fig.tight_layout(); fig.savefig(f"{FIG}/b3_summary.png"); plt.close(fig)
+
+
+def fig_b4():
+    """Stage B''': F_nuc, F_pop (two estimators), F_sad vs tau_c; measured vs predicted pop / sad slopes."""
+    o = json.load(open("results/b4_summary.json"))
+    taus = [5, 10, 20]
+    fig, ax = plt.subplots(1, 2, figsize=(10.5, 3.7))
+    for i, (k, lab, col) in enumerate((("F_nuc", "F (nucleation)", C[0]), ("F_pop", "F_pop (Γ/ν)", C[2]),
+                                       ("F_pop_direct_density", "F_pop (direct density)", C[6]), ("F_sad", "F_sad", C[1]))):
+        v = [o[f"tau{t}"]["F"]["D0.3_combined"][k] for t in taus]
+        ax[0].errorbar(np.array(taus) * (1 + 0.04 * (i - 1.5)), [x[0] for x in v], yerr=[x[1] for x in v], fmt="o-",
+                       color=col, ms=7, label=lab)
+    ax[0].axhline(1, color=INK2, ls="--", lw=1); ax[0].set_xscale("log"); ax[0].set_xticks(taus, [str(t) for t in taus])
+    ax[0].xaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
+    ax[0].set_xlabel("τ_c"); ax[0].set_ylabel("measured / predicted")
+    ax[0].set_title("D = 0.3: rotation antisym. + β=α shear combined", fontsize=9); ax[0].legend(fontsize=7)
+    t = "tau10"
+    for k, lab, mk in (("pop", "s_nuc − s_col", "o"), ("sad", "s_nuc + s_col", "s"), ("nuc", "s_nuc", "^")):
+        for D, col in (("0.2", C[3]), ("0.3", C[0]), ("0.4", C[1])):
+            pr = o[t][f"D{D}_undriven"]["pred"][k]
+            src = o[t]["driven"]["combined_rot_antisym_and_P5"] if D == "0.3" else o[t]["driven"][f"P11_D{D}"]
+            m = src[{"pop": "s_pop", "sad": "s_sad", "nuc": "s_nuc"}[k]]
+            ax[1].errorbar(pr["pred"], m[0], xerr=pr["err"], yerr=m[1], fmt=mk, color=col, ms=7,
+                           label=f"{lab}, D={D}" if k == "pop" or D == "0.3" else None)
+    xx = np.linspace(-15, 45, 2)
+    ax[1].plot(xx, xx, color=INK2, lw=1, ls="--", label="measured = predicted")
+    ax[1].plot(xx, 0.77 * xx, color=INK2, lw=1, ls=":", label="0.77 × predicted")
+    ax[1].set_xlabel("predicted (equivalent field)"); ax[1].set_ylabel("measured"); ax[1].legend(fontsize=6, ncol=2)
+    ax[1].set_title("τ_c = 10: population, saddle and nucleation slopes", fontsize=9)
+    fig.tight_layout(); fig.savefig(f"{FIG}/b4_summary.png"); plt.close(fig)
