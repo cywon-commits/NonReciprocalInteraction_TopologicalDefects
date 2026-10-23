@@ -16,6 +16,10 @@ pts["P18_P10b"] = dict(drive="rot", u0=U0, rot_sign=-1.0, beta=0.1, t_run=16000.
 # P19: alpha = beta = 0.05, P5-type shear and P10-type rotation drive, twice the statistics
 pts["P19_shear_a0.05"] = dict(drive="shear", u0=U0, alpha=0.05, beta=0.05, t_run=16000.0, seed=8201)
 pts["P19_rot_a0.05"] = dict(drive="rot", u0=U0, rot_sign=1.0, alpha=0.05, beta=0.05, t_run=16000.0, seed=8202)
+# P19 follow-up (section 9 rule: alpha = 0.05 shear again near 0 -> add alpha = 0.025); rotation drive added
+# for comparison because shear and rotation-only drives differ at alpha = 0.05
+pts["P19_shear_a0.025"] = dict(drive="shear", u0=U0, alpha=0.025, beta=0.025, t_run=16000.0, seed=8203)
+pts["P19_rot_a0.025"] = dict(drive="rot", u0=U0, rot_sign=1.0, alpha=0.025, beta=0.025, t_run=16000.0, seed=8204)
 # P20: single sinusoidal shear with period L/3 (k = 6 pi / L), u0 = 0.04/3 (same omega_max); two seeds each
 for b, tag in ((0.0, "b0"), (0.1, "ba")):
     for sd in (1, 2):
