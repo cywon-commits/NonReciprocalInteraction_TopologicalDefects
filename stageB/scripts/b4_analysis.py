@@ -151,58 +151,64 @@ def ratio(x, p):
     return (x[0] / p["pred"], float(abs(x[0] / p["pred"]) * np.hypot(x[1] / x[0] if x[0] else 0, p["err"] / p["pred"])))
 
 
-out = {}
-for tau in TAUS:
-    T_ = f"tau{tau:g}"
-    o = out[T_] = {}
-    # undriven baseline, D = 0.3
-    dB = deriv("results/b3/P16_B0.11", "results/b3/P16_B0.13", 0.02, tau, paired=True)
-    dT = deriv("results/ladder/ladder_T0.45", "results/ladder/ladder_T0.55", 0.10, tau, paired=False)
-    o["D0.3_undriven"] = dict(dB=dB, dT=dT, pred=predict(dB, dT, 0.12, 0.5))
-    # D = 0.2, 0.4 (P17)
-    for D, dBB in ((0.2, 0.005), (0.4, 0.01)):
-        n = lambda Tt, s: f"results/b3/P17_D{D:.1f}_T{Tt:.2f}_B{s}"
-        dBd = deriv(n(0.5, "m"), n(0.5, "p"), 2 * dBB, tau, paired=True)
-        dTd = deriv_T_avg([n(0.5, "m"), n(0.5, "p")], [n(0.55, "m"), n(0.55, "p")], 0.05, tau)
-        o[f"D{D}_undriven"] = dict(dB=dBd, dT=dTd, pred=predict(dBd, dTd, D ** 2 * 4 / 3, 0.5))
-    # driven
-    P10 = [driven("results/b2/P10", tau), driven("results/b3/P18_P10", tau)]
-    P10b = [driven("results/b2/P10b", tau), driven("results/b3/P18_P10b", tau)]
-    p10, p10b = combine(P10), combine(P10b)
-    anti = {k: ((p10[k][0] - p10b[k][0]) / 2, float(np.hypot(p10[k][1], p10b[k][1]) / 2)) for k in p10}
-    sym = {k: ((p10[k][0] + p10b[k][0]) / 2, float(np.hypot(p10[k][1], p10b[k][1]) / 2)) for k in p10}
-    P5 = [driven(f"results/main/{r}", tau) for r in ("P5", "P5b", "P5_u2x")]
-    rot_a = {0.025: driven("results/b3/P19_rot_a0.025", tau), 0.05: driven("results/b3/P19_rot_a0.05", tau), 0.1: anti}
-    dr = o["driven"] = dict(rotation_P10=p10, rotation_P10b=p10b, rotation_antisym=anti, rotation_sym=sym,
-                            shear_beta_alpha_P5group=combine(P5), rot_alpha=rot_a)
-    allrot = {k: wmean([rot_a[0.025], rot_a[0.05], anti], k) for k in SL}
-    best = {k: wmean([anti, dr["shear_beta_alpha_P5group"]], k) for k in SL}
-    dr["rotation_all_alpha"] = allrot; dr["combined_rot_antisym_and_P5"] = best
-    # D = 0.2, 0.4 driven (P11, beta = alpha shear)
-    dr["P11_D0.2"] = driven("results/b2/P11_D0.2", tau); dr["P11_D0.4"] = driven("results/b2/P11_D0.4", tau)
-    # ratios
-    F = o["F"] = {}
-    for lab, src, pk in (("D0.3_combined", best, "D0.3_undriven"), ("D0.3_rot_antisym", anti, "D0.3_undriven"),
-                         ("D0.3_P5group", dr["shear_beta_alpha_P5group"], "D0.3_undriven"),
-                         ("D0.3_rot_all_alpha", allrot, "D0.3_undriven"),
-                         ("D0.2_P11", dr["P11_D0.2"], "D0.2_undriven"), ("D0.4_P11", dr["P11_D0.4"], "D0.4_undriven")):
-        pr = o[pk]["pred"]
-        F[lab] = dict(F_nuc=ratio(src["s_nuc"], pr["nuc"]), F_pop=ratio(src["s_pop"], pr["pop"]),
-                      F_pop_direct_density=ratio(src["s_dens"], pr["pop_direct"]), F_sad=ratio(src["s_sad"], pr["sad"]),
-                      F_col=ratio(src["s_col"], pr["col"]))
 
-json.dump(out, open("results/b4_summary.json", "w"), indent=1, default=float)
-for tau in TAUS:
-    o = out[f"tau{tau:g}"]
-    print(f"===== tau_c = {tau:g}")
-    for k in ("D0.3_undriven", "D0.2_undriven", "D0.4_undriven"):
-        u = o[k]
-        print(k, "dB:", {q: tuple(round(x, 2) for x in v) for q, v in u["dB"].items()})
-        print("   dT:", {q: tuple(round(x, 2) for x in v) for q, v in u["dT"].items()})
-        print("   pred:", {q: round(v["pred"], 2) if isinstance(v, dict) else v for q, v in u["pred"].items()},
-              "errs", {q: round(v["err"], 2) for q, v in u["pred"].items() if isinstance(v, dict)})
-    for k in ("rotation_antisym", "rotation_sym", "shear_beta_alpha_P5group", "rotation_all_alpha", "combined_rot_antisym_and_P5", "P11_D0.2", "P11_D0.4"):
-        v = o["driven"][k]
-        print(k, {q: (round(v[q][0], 1), round(v[q][1], 1)) for q in SL})
-    for k, v in o["F"].items():
-        print("F", k, {q: (round(x[0], 2), round(x[1], 2)) for q, x in v.items()})
+def main():
+    out = {}
+    for tau in TAUS:
+        T_ = f"tau{tau:g}"
+        o = out[T_] = {}
+        # undriven baseline, D = 0.3
+        dB = deriv("results/b3/P16_B0.11", "results/b3/P16_B0.13", 0.02, tau, paired=True)
+        dT = deriv("results/ladder/ladder_T0.45", "results/ladder/ladder_T0.55", 0.10, tau, paired=False)
+        o["D0.3_undriven"] = dict(dB=dB, dT=dT, pred=predict(dB, dT, 0.12, 0.5))
+        # D = 0.2, 0.4 (P17)
+        for D, dBB in ((0.2, 0.005), (0.4, 0.01)):
+            n = lambda Tt, s: f"results/b3/P17_D{D:.1f}_T{Tt:.2f}_B{s}"
+            dBd = deriv(n(0.5, "m"), n(0.5, "p"), 2 * dBB, tau, paired=True)
+            dTd = deriv_T_avg([n(0.5, "m"), n(0.5, "p")], [n(0.55, "m"), n(0.55, "p")], 0.05, tau)
+            o[f"D{D}_undriven"] = dict(dB=dBd, dT=dTd, pred=predict(dBd, dTd, D ** 2 * 4 / 3, 0.5))
+        # driven
+        P10 = [driven("results/b2/P10", tau), driven("results/b3/P18_P10", tau)]
+        P10b = [driven("results/b2/P10b", tau), driven("results/b3/P18_P10b", tau)]
+        p10, p10b = combine(P10), combine(P10b)
+        anti = {k: ((p10[k][0] - p10b[k][0]) / 2, float(np.hypot(p10[k][1], p10b[k][1]) / 2)) for k in p10}
+        sym = {k: ((p10[k][0] + p10b[k][0]) / 2, float(np.hypot(p10[k][1], p10b[k][1]) / 2)) for k in p10}
+        P5 = [driven(f"results/main/{r}", tau) for r in ("P5", "P5b", "P5_u2x")]
+        rot_a = {0.025: driven("results/b3/P19_rot_a0.025", tau), 0.05: driven("results/b3/P19_rot_a0.05", tau), 0.1: anti}
+        dr = o["driven"] = dict(rotation_P10=p10, rotation_P10b=p10b, rotation_antisym=anti, rotation_sym=sym,
+                                shear_beta_alpha_P5group=combine(P5), rot_alpha=rot_a)
+        allrot = {k: wmean([rot_a[0.025], rot_a[0.05], anti], k) for k in SL}
+        best = {k: wmean([anti, dr["shear_beta_alpha_P5group"]], k) for k in SL}
+        dr["rotation_all_alpha"] = allrot; dr["combined_rot_antisym_and_P5"] = best
+        # D = 0.2, 0.4 driven (P11, beta = alpha shear)
+        dr["P11_D0.2"] = driven("results/b2/P11_D0.2", tau); dr["P11_D0.4"] = driven("results/b2/P11_D0.4", tau)
+        # ratios
+        F = o["F"] = {}
+        for lab, src, pk in (("D0.3_combined", best, "D0.3_undriven"), ("D0.3_rot_antisym", anti, "D0.3_undriven"),
+                             ("D0.3_P5group", dr["shear_beta_alpha_P5group"], "D0.3_undriven"),
+                             ("D0.3_rot_all_alpha", allrot, "D0.3_undriven"),
+                             ("D0.2_P11", dr["P11_D0.2"], "D0.2_undriven"), ("D0.4_P11", dr["P11_D0.4"], "D0.4_undriven")):
+            pr = o[pk]["pred"]
+            F[lab] = dict(F_nuc=ratio(src["s_nuc"], pr["nuc"]), F_pop=ratio(src["s_pop"], pr["pop"]),
+                          F_pop_direct_density=ratio(src["s_dens"], pr["pop_direct"]), F_sad=ratio(src["s_sad"], pr["sad"]),
+                          F_col=ratio(src["s_col"], pr["col"]))
+
+    json.dump(out, open("results/b4_summary.json", "w"), indent=1, default=float)
+    for tau in TAUS:
+        o = out[f"tau{tau:g}"]
+        print(f"===== tau_c = {tau:g}")
+        for k in ("D0.3_undriven", "D0.2_undriven", "D0.4_undriven"):
+            u = o[k]
+            print(k, "dB:", {q: tuple(round(x, 2) for x in v) for q, v in u["dB"].items()})
+            print("   dT:", {q: tuple(round(x, 2) for x in v) for q, v in u["dT"].items()})
+            print("   pred:", {q: round(v["pred"], 2) if isinstance(v, dict) else v for q, v in u["pred"].items()},
+                  "errs", {q: round(v["err"], 2) for q, v in u["pred"].items() if isinstance(v, dict)})
+        for k in ("rotation_antisym", "rotation_sym", "shear_beta_alpha_P5group", "rotation_all_alpha", "combined_rot_antisym_and_P5", "P11_D0.2", "P11_D0.4"):
+            v = o["driven"][k]
+            print(k, {q: (round(v[q][0], 1), round(v[q][1], 1)) for q in SL})
+        for k, v in o["F"].items():
+            print("F", k, {q: (round(x[0], 2), round(x[1], 2)) for q, x in v.items()})
+
+
+if __name__ == "__main__":
+    main()
