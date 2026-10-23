@@ -32,6 +32,8 @@ for tau in TAUS:
         else:
             pB = (f"results/c/C_{tag}_B0.11", f"results/c/C_{tag}_B0.13")
             dr = [(f"results/c/C_{tag}_rotp", f"results/c/C_{tag}_rotm")]
+            dr += [(f"results/c/C_{tag}_rotp_s{k}", f"results/c/C_{tag}_rotm_s{k}") for k in (2, 3, 4)
+                   if os.path.exists(f"configs/c/C_{tag}_rotp_s{k}.json")]
         lo, hi = NEIGH[T]
         need = list(pB) + [x for pair in dr for x in pair] + [B12[lo], B12[hi]]
         if not all(done(d) for d in need):

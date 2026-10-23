@@ -23,6 +23,16 @@ for T in (0.60, 0.55, 0.70, 0.45):  # priority order C3, C2, C4, C1
     if T == 0.70:
         for Tb, trb in ((0.65, 2000.0), (0.70, 1500.0), (0.75, 1500.0)):
             pts[f"C_ladder_T{Tb:.2f}_B0.12"] = dict(T=Tb, t_run=trb, beta=0.0, seed=9800 + int(Tb * 100))
+# extra statistics at T = 0.55, 0.60 (the predicted signal falls with T; with one +-omega pair F_pop errors were
+# 0.3-0.35): three more seed pairs each, run after the C1 (T = 0.45) runs
+EXTRA = []
+for T in (0.55, 0.60):
+    for k in (2, 3, 4):
+        for sgn, nm in ((1.0, "rotp"), (-1.0, "rotm")):
+            name = f"C_T{T:.2f}_{nm}_s{k}"
+            pts[name] = dict(T=T, t_run=TRUN[T], drive="rot", u0=U0, rot_sign=sgn,
+                             seed=9000 + int(T * 1000) + 10 * k + (sgn < 0))
+            EXTRA.append(name)
 os.makedirs(os.path.join(ROOT, "configs/c"), exist_ok=True)
 for name, p in pts.items():
     cfg = dict(base, run_id=name)
