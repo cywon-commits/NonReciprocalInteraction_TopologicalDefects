@@ -216,3 +216,37 @@ def fig_b2(tau_c="10"):
     ax[3].axhline(0, color=INK2, lw=0.8); ax[3].set_xlabel("L"); ax[3].set_ylabel("s_nuc")
     ax[3].set_title("P13: L dependence at fixed ω", fontsize=9); ax[3].legend(fontsize=7)
     fig.tight_layout(); fig.savefig(f"{FIG}/b2_summary.png"); plt.close(fig)
+
+
+def fig_b3():
+    """Stage B'': measured vs predicted s_rot (D), alpha dependence (shear vs rotation drive), P10/P10b."""
+    b3 = json.load(open("results/b3_summary.json"))
+    extra = json.load(open("results/b3_alpha.json"))
+    fig, ax = plt.subplots(1, 3, figsize=(13, 3.7))
+    D = [0.2, 0.3, 0.4]
+    pr = [b3["D0.2"]["s_pred"], b3["D0.3"]["s_pred"], b3["D0.4"]["s_pred"]]
+    pe = [b3["D0.2"]["s_pred_err"], b3["D0.3"]["s_pred_err"], b3["D0.4"]["s_pred_err"]]
+    me = [b3["D0.2"]["s_meas_P11"], b3["D0.3"]["s_meas_P5group"], b3["D0.4"]["s_meas_P11"]]
+    ax[0].errorbar(D, pr, yerr=pe, fmt="s-", color=INK2, ms=7, label="s_rot^pred (rate B, T sensitivity)")
+    ax[0].errorbar(np.array(D) + 0.005, [m[0] for m in me], yerr=[m[1] for m in me], fmt="o", color=C[0], ms=8,
+                   label="measured (β = α shear)")
+    ax[0].set_xlabel("D  (B/D² = 4/3)"); ax[0].set_ylabel("s_rot"); ax[0].legend(fontsize=7)
+    ax[0].set_title("P16/P17: magnitude of the rotation term", fontsize=9); ax[0].axhline(0, color=GRID)
+    for key, col, lab, dx in (("rot", C[1], "rotation-only drive (P10 type)", 0.003), ("shear", C[0], "β = α shear (P5 type)", -0.003)):
+        a = np.array(extra[key]["alpha"]); v = np.array(extra[key]["s"]); e = np.array(extra[key]["ds"])
+        ax[1].errorbar(a + dx, v, yerr=e, fmt="o-", color=col, ms=7, label=lab)
+    ax[1].axhline(b3["D0.3"]["s_pred"], color=INK2, ls="--", lw=1, label="s_rot^pred (D = 0.3)")
+    ax[1].axhline(0, color=GRID); ax[1].set_xscale("log"); ax[1].set_xticks([0.025, 0.05, 0.1, 0.2, 0.3], ["0.025", "0.05", "0.1", "0.2", "0.3"])
+    ax[1].xaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
+    ax[1].set_ylim(-8, 34)
+    ax[1].set_xlabel("α = β"); ax[1].set_ylabel("s_nuc"); ax[1].legend(fontsize=7, loc="lower right")
+    ax[1].set_title("P19: α dependence", fontsize=9)
+    p = b3["P18"]
+    vals = [p["P10_comb"], p["P10b_comb"], p["antisym"], p["sym"]]
+    labs = ["P10 (−Ωẑ×S)", "P10b (+Ωẑ×S)", "(P10 − P10b)/2", "(P10 + P10b)/2"]
+    for i, (v, e) in enumerate(vals):
+        ax[2].errorbar(i, v, yerr=e, fmt="o", ms=8, color=[C[1], C[1], C[0], INK2][i])
+    ax[2].axhline(0, color=INK2, lw=0.8); ax[2].axhline(b3["D0.3"]["s_pred"], color=INK2, ls="--", lw=1)
+    ax[2].set_xticks(range(4), labs, fontsize=7); ax[2].set_ylabel("s_nuc")
+    ax[2].set_title("P18: oddness in Ω (all statistics)", fontsize=9)
+    fig.tight_layout(); fig.savefig(f"{FIG}/b3_summary.png"); plt.close(fig)
