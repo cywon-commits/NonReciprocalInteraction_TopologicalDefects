@@ -11,3 +11,5 @@ results/*_batch*.log
 results/b2/*/
 results/b3/*/
 results/b3_batch*.log
+results/c/*/
+results/c_batch*.log
