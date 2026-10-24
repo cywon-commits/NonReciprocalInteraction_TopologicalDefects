@@ -36,6 +36,7 @@ docs/
 code/                            검증 스크립트 (각 폴더에서 실행)
 results/                         위 스크립트의 출력 (JSON / JSON Lines)
 stageB/                          의뢰 작업 공간
+paper/                           원고 (main.tex, figs/, figsrc/, 미리보기 PDF)
 ```
 
 ## 코드와 문서의 대응
